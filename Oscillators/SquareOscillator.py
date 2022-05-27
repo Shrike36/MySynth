@@ -6,7 +6,7 @@ class SquareOscillator(BaseOscillator):
         self.threshold = threshold
         super().__init__(frequency, amplitude, sample_rate)
 
-    def getValuesOfPeriod(self):
+    def get_values_of_period(self):
         period_len = int(self.sample_rate/self.frequency)
         t = np.linspace(0,period_len,period_len)
         values = self.amplitude*np.cos(2*np.pi*t)

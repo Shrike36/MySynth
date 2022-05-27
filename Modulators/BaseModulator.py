@@ -1,4 +1,4 @@
 
 class Modulator:
-    def getNextValue(self):
+    def get_next_value(self):
         pass
