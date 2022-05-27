@@ -54,6 +54,7 @@
 # plt.legend(loc='lower right')
 # plt.show()
 # fig.savefig("sine.jpg")
+import math
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -76,12 +77,12 @@ A_c = 5#float(input('Enter carrier amplitude: '))
 f_c = 440#float(input('Enter carrier frquency: '))
 A_m = 5#float(input('Enter message amplitude: '))
 f_m = 2#float(input('Enter message frquency: '))
-modulation_index = 1#float(input('Enter modulation index: '))
+modulation_index = 140#float(input('Enter modulation index: '))
 
-sample_rate = 44100
+sample_rate = 22000
 
 print('done')
-lfo = LFO(SineOscillator(f_m, A_m, sample_rate),1)
+lfo = LFO(SineOscillator(f_m, A_m, sample_rate),140)
 oscillator = SineOscillator(f_c, A_c, sample_rate)
 carrier2 = SineOscillator(523.36,A_c,sample_rate)
 envelope = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
@@ -92,10 +93,10 @@ car2 = []
 lfo_1 = []
 env = []
 for t in range(0,10*sample_rate):
-    osc.append(oscillator.get_next_value())
-    car2.append(carrier2.get_next_value())
-    lfo_1.append(lfo.get_next_value())
-    env.append(envelope.get_next_value())
+    osc.append(oscillator.get_next_value(t))
+    car2.append(carrier2.get_next_value(t))
+    lfo_1.append(lfo.get_next_value(t))
+    env.append(envelope.get_next_value(t))
 
 print('done')
 
@@ -113,13 +114,13 @@ product_am2 = []
 product_fm = []
 t1 = time.time()
 for t in range(0,10*sample_rate):
-    oscillator_next = oscillator.get_next_value()
-    lfo_next = lfo.get_next_value()
-    env_next = envelope.get_next_value()
+    oscillator_next = oscillator.get_next_value(t)
+    lfo_next = lfo.get_next_value(t)
+    env_next = envelope.get_next_value(t)
 
-    oscillator2_next = oscillator2.get_next_value()
-    lfo2_next = lfo2.get_next_value()
-    env2_next = envelope2.get_next_value()
+    oscillator2_next = oscillator2.get_next_value(t)
+    lfo2_next = lfo2.get_next_value(t)
+    env2_next = envelope2.get_next_value(t)
 
     # product_am.append((1 + modulation_index*modulator_next/A_m)*carrier_next)
 
@@ -130,7 +131,8 @@ for t in range(0,10*sample_rate):
     product_am2[t] = Modulation.am_envelope_modulation(product_am2[t],env2_next)
 
     # time = np.linspace(0,int(carrier.sample_rate/carrier_next.frequency),int(self.sample_rate/self.frequency))
-    product_fm.append(np.cos(2 *np.pi*f_c*t + modulation_index*lfo_next/A_m))
+    # product_fm.append(np.cos(2*np.pi*f_c*t + modulation_index*lfo_next/A_m))
+    product_fm.append(Modulation.pm_lfo_modulation(oscillator,lfo_next,lfo.index,t,sample_rate))
 print(" Total time taken is :", time.time() - t1)
 print('done')
 
@@ -172,7 +174,7 @@ plt.ylabel('Amplitude')
 plt.xlabel('Envelope')
 
 plt.subplot(4,1,4)
-plt.plot(product_am, color="purple")
+plt.plot(product_fm, color="purple")
 plt.ylabel('Amplitude')
 plt.xlabel('AM signal')
 
@@ -192,7 +194,7 @@ def wave_to_file(wav, wav2=None, fname="temp.wav", amp=0.01):
 
     wavfile.write(fname, sample_rate, wav)
 
-wave_to_file(product_am,product_am2, fname="c_maj7.wav")
+# wave_to_file(product_am,product_am2, fname="c_maj7.wav")
 
 plt.show()
 

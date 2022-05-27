@@ -13,16 +13,17 @@ class BaseOscillator:
         t = np.linspace(0,int(self.sample_rate/self.frequency),int(self.sample_rate/self.frequency))
         return self.amplitude*np.cos(2*np.pi*t)
 
-    def get_next_value(self):
+    def get_next_value(self,time):
         # if(self.sample == self.sample_rate):
         #     self.seconds += 1
         #     self.sample = 0
         # index = self.seconds*self.sample_rate+self.sample
         # index = index % len(self.period_values)
         # self.sample+=1
-        index = self.sample % len(self.period_values)
-        self.sample+=1
-        return self.period_values[index]
+        # index = self.sample % len(self.period_values)
+        # self.sample+=1
+        # return self.period_values[index]
+        return self.period_values[time % len(self.period_values)]
 
     def set_time_to_null(self):
         self.seconds = 0

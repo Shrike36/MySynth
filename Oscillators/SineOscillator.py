@@ -4,5 +4,5 @@ from Oscillators.BaseOscillator import BaseOscillator
 class SineOscillator(BaseOscillator):
     def get_values_of_period(self):
         period_len = int(self.sample_rate/self.frequency)
-        t = np.linspace(0,period_len,period_len)
+        t = np.linspace(0,1,period_len,endpoint=False)
         return self.amplitude*np.cos(2*np.pi*t)

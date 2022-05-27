@@ -8,7 +8,7 @@ class SquareOscillator(BaseOscillator):
 
     def get_values_of_period(self):
         period_len = int(self.sample_rate/self.frequency)
-        t = np.linspace(0,period_len,period_len)
+        t = np.linspace(0,1,period_len,endpoint=False)
         values = self.amplitude*np.cos(2*np.pi*t)
         for i in range(0,len(values)):
             if values[i] < self.threshold:

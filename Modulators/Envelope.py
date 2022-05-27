@@ -45,7 +45,7 @@ class Envelope(Modulator):
     def get_release_values(self):
         return np.linspace(self.sustain_level, 0, self.release_len)
 
-    def get_next_value(self):
+    def get_next_value(self,time):
         # if(self.sample == self.sample_rate):
         #     self.seconds += 1
         #     self.sample = 0
@@ -54,11 +54,14 @@ class Envelope(Modulator):
         # if index >= self.len:
         #     return 0
         # return self.values[index]
-        index = self.sample
-        self.sample+=1
-        if index >= self.len:
+        # index = self.sample
+        # self.sample+=1
+        # if index >= self.len:
+        #     return 0
+        # return self.values[index]
+        if time >= self.len:
             return 0
-        return self.values[index]
+        return self.values[time]
 
 
     def set_time_to_null(self):
