@@ -82,7 +82,7 @@ modulation_index = 140#float(input('Enter modulation index: '))
 sample_rate = 22000
 
 print('done')
-lfo = LFO(SineOscillator(f_m, A_m, sample_rate),140)
+lfo = LFO(SquareOscillator(f_m, A_m, sample_rate),modulation_index)
 oscillator = SineOscillator(f_c, A_c, sample_rate)
 carrier2 = SineOscillator(523.36,A_c,sample_rate)
 envelope = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
@@ -92,11 +92,13 @@ osc = []
 car2 = []
 lfo_1 = []
 env = []
+arr = []
 for t in range(0,10*sample_rate):
     osc.append(oscillator.get_next_value(t))
     car2.append(carrier2.get_next_value(t))
     lfo_1.append(lfo.get_next_value(t))
     env.append(envelope.get_next_value(t))
+    arr.append(np.cos(2*np.pi*f_c*t/(sample_rate)))
 
 print('done')
 
@@ -112,6 +114,7 @@ envelope2 = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
 product_am = []
 product_am2 = []
 product_fm = []
+
 t1 = time.time()
 for t in range(0,10*sample_rate):
     oscillator_next = oscillator.get_next_value(t)

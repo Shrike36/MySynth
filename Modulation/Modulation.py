@@ -12,14 +12,14 @@ class Modulation:
 
     @staticmethod
     def pm_lfo_modulation(osc,mod_val,mod_index,time,sample_rate):
-        delta = mod_val
-        # if delta < 0:
-        #     pass
-        len_of_period = len(osc.period_values)
-        delta_samples = (int)(len_of_period * delta / 2*np.pi)
-        old_index = time % len_of_period
-        new_index = old_index + delta_samples
-        return osc.get_next_value(new_index)
+        # delta = mod_val
+        delta = int(sample_rate * mod_val / (2*np.pi*osc.frequency))
+        # len_of_period = len(osc.period_values)
+        # delta_samples = (int)(len_of_period * delta / 2*np.pi)
+        # old_index = time % len_of_period
+        # new_index = old_index + int(delta)
+        # return osc.get_next_value(time+delta)
+        return osc.get_next_value(time+delta)
         # t=time/sample_rate
         # return np.cos(2*np.pi*440*t+mod_val)
         # period_len = int(self.sample_rate/self.frequency)
