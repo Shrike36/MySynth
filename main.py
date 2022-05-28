@@ -67,75 +67,77 @@ import time
 from Modulation.Modulation import Modulation
 from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
-from Oscillators.BaseOscillator import BaseOscillator
+from Oscillators.Oscillator import Oscillator, Type
 from Oscillators.SawtoothOscillator import SawtoothOscillator
 from Oscillators.SineOscillator import SineOscillator
 from Oscillators.SquareOscillator import SquareOscillator
 from Oscillators.TriangleOscillator import TriangleOscillator
 
 A_c = 5#float(input('Enter carrier amplitude: '))
-f_c = 440#float(input('Enter carrier frquency: '))
+f_c = 25#float(input('Enter carrier frquency: '))
 A_m = 5#float(input('Enter message amplitude: '))
-f_m = 2#float(input('Enter message frquency: '))
-modulation_index = 140#float(input('Enter modulation index: '))
+f_m = 1#float(input('Enter message frquency: '))
+modulation_index = 1#float(input('Enter modulation index: '))
 
 sample_rate = 22000
 
 print('done')
-lfo = LFO(SquareOscillator(f_m, A_m, sample_rate),modulation_index)
-oscillator = SineOscillator(f_c, A_c, sample_rate)
-carrier2 = SineOscillator(523.36,A_c,sample_rate)
+# lfo = LFO(SawtoothOscillator(f_m, A_m, sample_rate),modulation_index)
+# oscillator = SineOscillator(f_c, A_c, sample_rate)
+# carrier2 = SineOscillator(523.36,A_c,sample_rate)
+# envelope = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
+
+lfo = LFO(Oscillator(Type.square,sample_rate),modulation_index)
+oscillator = Oscillator(Type.square,sample_rate)
 envelope = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
-print('done')
 
-osc = []
-car2 = []
-lfo_1 = []
-env = []
-arr = []
-for t in range(0,10*sample_rate):
-    osc.append(oscillator.get_next_value(t))
-    car2.append(carrier2.get_next_value(t))
-    lfo_1.append(lfo.get_next_value(t))
-    env.append(envelope.get_next_value(t))
-    arr.append(np.cos(2*np.pi*f_c*t/(sample_rate)))
-
-print('done')
-
-oscillator.set_time_to_null()
-lfo.set_time_to_null()
-envelope.set_time_to_null()
-
-oscillator2=SineOscillator(523.36,A_c,sample_rate)
-lfo2=LFO(SquareOscillator(f_m, A_m, sample_rate),1)
+oscillator2=Oscillator(Type.sine,sample_rate)
+lfo2=LFO(Oscillator(Type.triangle,sample_rate),3)
 envelope2 = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
+print('done')
+
+osc1 = []
+osc2 = []
+lfo_1 = []
+lfo_2 = []
+env = []
+
+for t in range(0,10*sample_rate):
+    osc1.append(oscillator.get_next_sample(5, 100, t))
+    osc2.append(oscillator2.get_next_sample(5, 200, t))
+    lfo_1.append(lfo.get_next_value(2,t))
+    lfo_2.append(lfo2.get_next_value(3,t))
+    env.append(envelope.get_next_value(t))
+
+print('done')
 
 
-product_am = []
+product_am1 = []
 product_am2 = []
 product_fm = []
 
 t1 = time.time()
 for t in range(0,10*sample_rate):
-    oscillator_next = oscillator.get_next_value(t)
-    lfo_next = lfo.get_next_value(t)
-    env_next = envelope.get_next_value(t)
-
-    oscillator2_next = oscillator2.get_next_value(t)
-    lfo2_next = lfo2.get_next_value(t)
+    pass
+    oscillator1_next = oscillator.get_next_sample(5, 100, t)
+    lfo1_next = lfo.get_next_value(2,t)
+    env1_next = envelope.get_next_value(t)
+    #
+    oscillator2_next = oscillator2.get_next_sample(5, 200, t)
+    lfo2_next = lfo2.get_next_value(3,t)
     env2_next = envelope2.get_next_value(t)
 
     # product_am.append((1 + modulation_index*modulator_next/A_m)*carrier_next)
 
-    product_am.append(Modulation.am_lfo_modulation(oscillator_next, lfo_next, lfo.index))
-    product_am[t] = Modulation.am_envelope_modulation(product_am[t],env_next)
+    product_am1.append(Modulation.am_lfo_modulation(oscillator1_next, lfo1_next, lfo.index))
+    product_am1[t] = Modulation.am_envelope_modulation(product_am1[t], env1_next)
 
     product_am2.append(Modulation.am_lfo_modulation(oscillator2_next, lfo2_next, lfo2.index))
-    product_am2[t] = Modulation.am_envelope_modulation(product_am2[t],env2_next)
+    # product_am2[t] = Modulation.am_envelope_modulation(product_am2[t],env2_next)
 
     # time = np.linspace(0,int(carrier.sample_rate/carrier_next.frequency),int(self.sample_rate/self.frequency))
     # product_fm.append(np.cos(2*np.pi*f_c*t + modulation_index*lfo_next/A_m))
-    product_fm.append(Modulation.pm_lfo_modulation(oscillator,lfo_next,lfo.index,t,sample_rate))
+    # product_fm.append(Modulation.pm_lfo_modulation(oscillator, lfo1_next, lfo.index, t, sample_rate))
 print(" Total time taken is :", time.time() - t1)
 print('done')
 
@@ -162,24 +164,40 @@ product = A_c*(1+modulation_index*np.cos(2*np.pi*f_m*t))*np.cos(2*np.pi*f_c*t)
 
 plt.subplot(4,1,1)
 plt.title('Amplitude Modulation')
-plt.plot(lfo_1, 'g')
+plt.plot(osc1, 'g')
 plt.ylabel('Amplitude')
-plt.xlabel('LFO signal')
+plt.xlabel('Osc1 signal')
 
 plt.subplot(4,1,2)
-plt.plot(osc, 'r')
+plt.plot(lfo_1, 'r')
 plt.ylabel('Amplitude')
-plt.xlabel('Oscillator signal')
+plt.xlabel('LFO1 signal')
 
 plt.subplot(4,1,3)
-plt.plot(env, color="purple")
+plt.plot(product_am1, color="purple")
 plt.ylabel('Amplitude')
-plt.xlabel('Envelope')
+plt.xlabel('am')
 
 plt.subplot(4,1,4)
-plt.plot(product_fm, color="purple")
+plt.plot(env, color="purple")
 plt.ylabel('Amplitude')
-plt.xlabel('AM signal')
+plt.xlabel('am')
+
+# plt.subplot(3,1,1)
+# plt.title('Amplitude Modulation')
+# plt.plot(osc2, 'g')
+# plt.ylabel('Amplitude')
+# plt.xlabel('Osc2 signal')
+#
+# plt.subplot(3,1,2)
+# plt.plot(lfo_2, 'r')
+# plt.ylabel('Amplitude')
+# plt.xlabel('LFO2 signal')
+#
+# plt.subplot(3,1,3)
+# plt.plot(product_am2, color="purple")
+# plt.ylabel('Amplitude')
+# plt.xlabel('Envelope')
 
 plt.subplots_adjust(hspace=1)
 plt.rc('font', size=15)

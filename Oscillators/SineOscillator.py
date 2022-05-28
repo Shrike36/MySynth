@@ -1,7 +1,7 @@
 import numpy as np
-from Oscillators.BaseOscillator import BaseOscillator
+from Oscillators.Oscillator import Oscillator
 
-class SineOscillator(BaseOscillator):
+class SineOscillator(Oscillator):
     def get_values_of_period(self):
         period_len = int(self.sample_rate/self.frequency)
         t = np.linspace(0,1,period_len,endpoint=False)

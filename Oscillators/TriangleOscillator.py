@@ -1,8 +1,8 @@
 import numpy as np
 from scipy import signal
-from Oscillators.BaseOscillator import BaseOscillator
+from Oscillators.Oscillator import Oscillator
 
-class TriangleOscillator(BaseOscillator):
+class TriangleOscillator(Oscillator):
     def get_values_of_period(self):
         period_len = int(self.sample_rate/self.frequency)
         t = np.linspace(0,1,period_len,endpoint=False)

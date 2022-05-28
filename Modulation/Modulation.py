@@ -13,6 +13,7 @@ class Modulation:
     @staticmethod
     def pm_lfo_modulation(osc,mod_val,mod_index,time,sample_rate):
         # delta = mod_val
+        print(mod_val)
         delta = int(sample_rate * mod_val / (2*np.pi*osc.frequency))
         # len_of_period = len(osc.period_values)
         # delta_samples = (int)(len_of_period * delta / 2*np.pi)
@@ -26,7 +27,18 @@ class Modulation:
         # t = np.linspace(0,period_len,period_len)
         # return self.amplitude*signal.sawtooth(2 *np.pi*t, 0.5)
         # np.cos(2*np.pi*f_c*t + mod_val)
-        # return (1+mod_val)*osc_val/(int(mod_index)+1)
+        # return (1+mod_val )*osc_val/(int(mod_index)+1)
+
+    @staticmethod
+    def fm_lfo_modulation(osc,mod_val,mod_index,time,sample_rate):
+        # delta = mod_val
+        delta = int(sample_rate * mod_val / (2*np.pi*osc.frequency))
+        # len_of_period = len(osc.period_values)
+        # delta_samples = (int)(len_of_period * delta / 2*np.pi)
+        # old_index = time % len_of_period
+        # new_index = old_index + int(delta)
+        # return osc.get_next_value(time+delta)
+        return osc.get_next_value(time+delta)
 
     @staticmethod
     def fm_envelope_modulation(osc_val,mod_val):

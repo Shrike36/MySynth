@@ -1,9 +1,9 @@
 import numpy as np
 from scipy import signal
-from Oscillators.BaseOscillator import BaseOscillator
+from Oscillators.Oscillator import Oscillator
 
 
-class SawtoothOscillator(BaseOscillator):
+class SawtoothOscillator(Oscillator):
     def get_values_of_period(self):
         # period_len = int(self.sample_rate/self.frequency)
         # t = np.linspace(-period_len/2,period_len/2,period_len)

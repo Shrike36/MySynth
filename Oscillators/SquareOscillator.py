@@ -1,7 +1,7 @@
 import numpy as np
-from Oscillators.BaseOscillator import BaseOscillator
+from Oscillators.Oscillator import Oscillator
 
-class SquareOscillator(BaseOscillator):
+class SquareOscillator(Oscillator):
     def __init__(self, frequency, amplitude,  sample_rate, threshold=0):
         self.threshold = threshold
         super().__init__(frequency, amplitude, sample_rate)
