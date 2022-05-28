@@ -61,14 +61,14 @@ from scipy.io import wavfile
 import time
 from Modifiers.WaveAdder import WaveAdder as wa
 from Modifiers.Panner import StereoPanner as sp
+from Modulators.Envelope import Envelope
+from Modulators.LFO import LFO
+from Oscillators.Oscillator import Oscillator, Type
 
 #Carrier wave c(t)=A_c*cos(2*pi*f_c*t)
 #Modulating wave m(t)=A_m*cos(2*pi*f_m*t)
 #Modulated wave s(t)=A_c[1+mu*cos(2*pi*f_m*t)]cos(2*pi*f_c*t)
-from Modulation.ParamsModulation import Modulation
-from Modulators.Envelope import Envelope
-from Modulators.LFO import LFO
-from Oscillators.Oscillator import Oscillator, Type
+from Synth.Synth import Synth
 
 A_c = 5#float(input('Enter carrier amplitude: '))
 f_c = 25#float(input('Enter carrier frquency: '))
@@ -79,126 +79,43 @@ modulation_index = 6#float(input('Enter modulation index: '))
 render_rate = 20000
 
 print('done')
-
-lfo = LFO(Oscillator(Type.square,render_rate),modulation_index)
-oscillator = Oscillator(Type.sine,render_rate)
-envelope = Envelope(0.3,0.2,0.8,0.9,1,render_rate)
-
-oscillator2=Oscillator(Type.square,render_rate)
-lfo2=LFO(Oscillator(Type.triangle,render_rate),3)
-envelope2 = Envelope(0.3,0.2,0.8,0.9,1,render_rate)
+synth = Synth(render_rate,True)
 print('done')
 
-osc1 = []
-osc2 = []
-lfo_1 = []
-lfo_2 = []
-env = []
-
-for t in range(0,10*render_rate):
-    osc1.append(oscillator.get_next_sample(5, 10, t))
-    osc2.append(oscillator2.get_next_sample(5, 5, t))
-    lfo_1.append(lfo.get_next_value(2,t))
-    lfo_2.append(lfo2.get_next_value(3,t))
-    env.append(envelope.get_next_value(t))
-
-print('done')
-
-
-product_am1 = []
-product_am2 = []
-product_pm1 = []
-product_fm1 = []
+arr1 = []
+arr2 = []
 sum = []
-stereo_l = []
-stereo_r = []
 
 t1 = time.time()
 for t in range(0,10*render_rate):
-    pass
-    oscillator1_next = oscillator.get_next_sample(5, 10, t)
-    lfo1_next = lfo.get_next_value(2,t)
-    env1_next = envelope.get_next_value(t)
-    #
-    oscillator2_next = oscillator2.get_next_sample(5, 5, t)
-    lfo2_next = lfo2.get_next_value(3,t)
-    env2_next = envelope2.get_next_value(t)
-
-    product_am1.append(Modulation.am_lfo_modulation(oscillator1_next, lfo1_next, lfo.index))
-    product_am1[t] = Modulation.am_envelope_modulation(product_am1[t], env1_next)
-
-    product_am2.append(Modulation.am_lfo_modulation(oscillator2_next, lfo2_next, lfo2.index))
-    product_am2[t] = Modulation.am_envelope_modulation(product_am2[t],env2_next)
-
-    product_pm1.append(Modulation.pm_lfo_modulation(oscillator, 5, 16, lfo1_next, t, render_rate))
-
-    product_fm1.append(Modulation.fm_lfo_modulation(oscillator, 5, 32, lfo1_next, t))
-
-    sum.append(wa.get_sum(oscillator1_next, oscillator2_next, 0.5))
-
-    stereo_l.append(sp.get_stereo_sample(oscillator1_next,1)[0])
-    stereo_r.append(sp.get_stereo_sample(oscillator1_next,1)[1])
+    osc1, osc2, wave = synth.get_next_sample(10,440,t)
+    arr1.append(osc1)
+    arr2.append(osc2)
+    sum.append(wave)
 
 print(" Total time taken is :", time.time() - t1)
-print('done')
 
-# carrier = A_c*np.cos(2*np.pi*f_c*t)
-# for i in range(0,len(carrier)):
-#     if carrier[i] < 0:
-#         carrier[i] = -1
-#     else:
-#         carrier[i] = 1
-# modulator = A_m*np.cos(2*np.pi*f_m*t)
-# for i in range(0,len(modulator)):
-#     if modulator[i] < 0:
-#         modulator[i] = -1
-#     else:
-#         modulator[i] = 1
-product = A_c*(1+modulation_index*np.cos(2*np.pi*f_m*t))*np.cos(2*np.pi*f_c*t)
-# product_fm = np.cos(2 *np.pi*f_c*t + modulation_index*modulator/A_m)
-# for i in range(0,len(product_fm)):
-#     if product_fm[i] < 0:
-#         product_fm[i] = -1
-#     else:
-#         product_fm[i] = 1
-# product_am = (1 + modulation_index*modulator/A_m)*carrier
 
 plt.subplot(4,1,1)
 plt.title('Amplitude Modulation')
-plt.plot(osc1, 'g')
+plt.plot(arr1, 'g')
 plt.ylabel('Amplitude')
 plt.xlabel('Osc1 signal')
 
 plt.subplot(4,1,2)
-plt.plot(sum, 'r')
+plt.plot(arr2, 'r')
 plt.ylabel('Amplitude')
 plt.xlabel('LFO1 signal')
 
 plt.subplot(4,1,3)
-plt.plot(stereo_l, color="purple")
+plt.plot(sum, color="purple")
 plt.ylabel('Amplitude')
 plt.xlabel('am')
-
-plt.subplot(4,1,4)
-plt.plot(stereo_r, color="purple")
-plt.ylabel('Amplitude')
-plt.xlabel('am')
-
-# plt.subplot(3,1,1)
-# plt.title('Amplitude Modulation')
-# plt.plot(osc2, 'g')
-# plt.ylabel('Amplitude')
-# plt.xlabel('Osc2 signal')
 #
-# plt.subplot(3,1,2)
-# plt.plot(lfo_2, 'r')
+# plt.subplot(4,1,4)
+# plt.plot(stereo_r, color="purple")
 # plt.ylabel('Amplitude')
-# plt.xlabel('LFO2 signal')
-#
-# plt.subplot(3,1,3)
-# plt.plot(product_am2, color="purple")
-# plt.ylabel('Amplitude')
-# plt.xlabel('Envelope')
+# plt.xlabel('am')
 
 plt.subplots_adjust(hspace=1)
 plt.rc('font', size=15)
@@ -216,7 +133,7 @@ def wave_to_file(wav, wav2=None, fname="temp.wav", amp=0.01):
 
     wavfile.write(fname, render_rate, wav)
 
-# wave_to_file(product_am,product_am2, fname="c_maj7.wav")
+wave_to_file(sum, fname="c_maj7.wav")
 
 plt.show()
 
