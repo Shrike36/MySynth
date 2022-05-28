@@ -77,7 +77,7 @@ A_c = 5#float(input('Enter carrier amplitude: '))
 f_c = 25#float(input('Enter carrier frquency: '))
 A_m = 5#float(input('Enter message amplitude: '))
 f_m = 1#float(input('Enter message frquency: '))
-modulation_index = 1#float(input('Enter modulation index: '))
+modulation_index = 6#float(input('Enter modulation index: '))
 
 sample_rate = 22000
 
@@ -88,7 +88,7 @@ print('done')
 # envelope = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
 
 lfo = LFO(Oscillator(Type.square,sample_rate),modulation_index)
-oscillator = Oscillator(Type.square,sample_rate)
+oscillator = Oscillator(Type.sine,sample_rate)
 envelope = Envelope(0.3,0.2,0.8,0.9,1,sample_rate)
 
 oscillator2=Oscillator(Type.sine,sample_rate)
@@ -103,7 +103,7 @@ lfo_2 = []
 env = []
 
 for t in range(0,10*sample_rate):
-    osc1.append(oscillator.get_next_sample(5, 100, t))
+    osc1.append(oscillator.get_next_sample(5, 16, t))
     osc2.append(oscillator2.get_next_sample(5, 200, t))
     lfo_1.append(lfo.get_next_value(2,t))
     lfo_2.append(lfo2.get_next_value(3,t))
@@ -114,12 +114,13 @@ print('done')
 
 product_am1 = []
 product_am2 = []
-product_fm = []
+product_pm1 = []
+product_fm1 = []
 
 t1 = time.time()
 for t in range(0,10*sample_rate):
     pass
-    oscillator1_next = oscillator.get_next_sample(5, 100, t)
+    oscillator1_next = oscillator.get_next_sample(5, 10, t)
     lfo1_next = lfo.get_next_value(2,t)
     env1_next = envelope.get_next_value(t)
     #
@@ -133,7 +134,11 @@ for t in range(0,10*sample_rate):
     product_am1[t] = Modulation.am_envelope_modulation(product_am1[t], env1_next)
 
     product_am2.append(Modulation.am_lfo_modulation(oscillator2_next, lfo2_next, lfo2.index))
-    # product_am2[t] = Modulation.am_envelope_modulation(product_am2[t],env2_next)
+    product_am2[t] = Modulation.am_envelope_modulation(product_am2[t],env2_next)
+
+    product_pm1.append(Modulation.pm_lfo_modulation(oscillator, 5, 16, lfo1_next, t, sample_rate))
+
+    product_fm1.append(Modulation.fm_lfo_modulation(oscillator, 5, 32, lfo1_next, t, sample_rate))
 
     # time = np.linspace(0,int(carrier.sample_rate/carrier_next.frequency),int(self.sample_rate/self.frequency))
     # product_fm.append(np.cos(2*np.pi*f_c*t + modulation_index*lfo_next/A_m))
@@ -179,7 +184,7 @@ plt.ylabel('Amplitude')
 plt.xlabel('am')
 
 plt.subplot(4,1,4)
-plt.plot(env, color="purple")
+plt.plot(product_pm1, color="purple")
 plt.ylabel('Amplitude')
 plt.xlabel('am')
 
