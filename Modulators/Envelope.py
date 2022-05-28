@@ -1,21 +1,17 @@
-from Modulators.BaseModulator import Modulator
 import numpy as np
 
-class Envelope(Modulator):
+class Envelope():
     def __init__(self, attack_duration, decay_duration, sustain_duration, release_duration,
-                 sustain_level, sample_rate):
-        self.attack_len = int(attack_duration*sample_rate)
-        self.decay_len = int(decay_duration*sample_rate)
-        self.sustain_len = int(sustain_duration*sample_rate)
-        self.release_len = int(release_duration*sample_rate)
+                 sustain_level, render_rate):
+        self.attack_len = int(attack_duration*render_rate)
+        self.decay_len = int(decay_duration*render_rate)
+        self.sustain_len = int(sustain_duration*render_rate)
+        self.release_len = int(release_duration*render_rate)
         self.len = self.attack_len+self.decay_len+self.sustain_len+self.release_len
         self.sustain_level = sustain_level
-        self.sample_rate = sample_rate
+        self.render_rate = render_rate
 
         self.values = self.get_values()
-
-        self.seconds = 0
-        self.sample = 0
 
     def get_values(self):
         att=self.get_attack_values()
@@ -46,24 +42,7 @@ class Envelope(Modulator):
         return np.linspace(self.sustain_level, 0, self.release_len)
 
     def get_next_value(self,time):
-        # if(self.sample == self.sample_rate):
-        #     self.seconds += 1
-        #     self.sample = 0
-        # index = self.seconds*self.sample_rate+self.sample
-        # self.sample+=1
-        # if index >= self.len:
-        #     return 0
-        # return self.values[index]
-        # index = self.sample
-        # self.sample+=1
-        # if index >= self.len:
-        #     return 0
-        # return self.values[index]
         if time >= self.len:
             return 0
         return self.values[time]
 
-
-    def set_time_to_null(self):
-        self.seconds = 0
-        self.sample = 0

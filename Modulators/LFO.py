@@ -1,7 +1,4 @@
-from Modulators.BaseModulator import Modulator
-
-
-class LFO(Modulator):
+class LFO():
     def __init__(self, osc, index):
         self.lfo_osc = osc
         self.index = index

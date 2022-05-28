@@ -2,9 +2,9 @@ import numpy as np
 from scipy import signal
 
 class WaveGenerator:
-    def __init__(self, sample_rate):
-        self.sample_rate = sample_rate
-        self.t = np.linspace(0,1,int(self.sample_rate),endpoint=False)
+    def __init__(self, render_rate):
+        self.render_rate = render_rate
+        self.t = np.linspace(0,1,int(self.render_rate),endpoint=False)
         self.waves = self.get_waves()
         self.sine_wave = self.get_sine_wave()
         self.square_wave = self.get_square_wave()
@@ -32,7 +32,7 @@ class WaveGenerator:
         return values
 
     def get_sawtooth_wave(self):
-        # period_len = int(self.sample_rate/self.frequency)
+        # period_len = int(self.render_rate/self.frequency)
         # t = np.linspace(-period_len/2,period_len/2,period_len)
         # return -2*self.amplitude/(period_len)*t
         return signal.sawtooth(2*np.pi*self.t, 0)
