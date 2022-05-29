@@ -44,4 +44,5 @@ class Synth:
         if(self.stereo):
             stereo_sample = self.stereo_panner.get_stereo_sample(sample,time)
 
-        return osc_values,sample,stereo_sample
+        return sample
+        # return osc_values,sample#,stereo_sample

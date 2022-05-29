@@ -57,8 +57,10 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import interpolate
+from scipy.interpolate import interp1d
 from scipy.io import wavfile
-import time
+# import time
 
 from Modifiers.Detune import Detune, ModulatedDetune
 from Modifiers.WaveAdder import WaveAdder as wa, WaveAdder
@@ -68,7 +70,8 @@ from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
 from Oscillators.ModulatedOscillator import ModulatedOscillator
 from Oscillators.Oscillator import Oscillator, Type
-
+from pygame import midi
+import pyaudio
 #Carrier wave c(t)=A_c*cos(2*pi*f_c*t)
 #Modulating wave m(t)=A_m*cos(2*pi*f_m*t)
 #Modulated wave s(t)=A_c[1+mu*cos(2*pi*f_m*t)]cos(2*pi*f_c*t)
@@ -80,7 +83,9 @@ A_m = 5#float(input('Enter message amplitude: '))
 f_m = 1#float(input('Enter message frquency: '))
 modulation_index = 6#float(input('Enter modulation index: '))
 
-render_rate = 20000
+render_rate = 18000
+sample_rate = 18000
+buffer = 2048
 
 print('done')
 
@@ -88,27 +93,89 @@ lfo_1 = LFO(Oscillator(Type.sine,render_rate))
 
 envelope_1 = Envelope(0.3,0.8,3.8,3.9,0.5,render_rate)
 
-modulation_1 = LFOModulation(ModulationType.fm)
+modulation_1 = LFOModulation(ModulationType.pm)
 
-detune_1 = Detune(1/16)
+detune_1 = Detune(0)
 detune_2 = ModulatedDetune(1/4,lfo_1,2)
 
-wave_adder_1 = WaveAdder(0.8,1)
+wave_adder_1 = WaveAdder(0.8,1,0.5)
 
-panner_1 = StereoPanner(1)
-panner_2 = ModulatedPanner(0.2,lfo_1,3)
+panner_1 = StereoPanner(0.3)
+panner_2 = ModulatedPanner(0.2,lfo_1,4)
 
 base_oscillator_1 = Oscillator(Type.sine,render_rate)
-base_oscillator_2 = Oscillator(Type.triangle,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.triangle,lfo_1,2,envelope_1,modulation_1,1,render_rate)
+base_oscillator_2 = Oscillator(Type.sine,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.sine,lfo_1,3,envelope_1,modulation_1,3,render_rate)
 
-synth = Synth(base_oscillator_1,modulated_oscillator,
+synth = Synth(modulated_oscillator,modulated_oscillator,
               detune=detune_1,
               wave_adder=wave_adder_1,
-              stereo_panner=panner_2,
+              stereo_panner=panner_1,
               render_rate=render_rate,
               stereo=True)
 print('done')
+
+# midi.init()
+# if midi.get_count() > 0:
+#     midi_input = midi.Input(1)
+# else:
+#     raise Exception("no midi devices detected")
+
+stream = pyaudio.PyAudio().open(
+    rate=sample_rate,
+    channels=1,
+    format=pyaudio.paInt16,
+    output=True,
+    frames_per_buffer=buffer
+)
+
+def interpolate(samples):
+    new_arr = []
+    new_arr.append(samples[0])
+    for i in range(0,len(samples)-1):
+        el_1 = samples[i]
+        el_2 = samples[i+1]
+        new_arr.append((el_1+el_2)/2)
+        new_arr.append(el_2)
+    new_arr.append(el_2)
+    return new_arr
+
+def get_samples(time):
+    # Return samples in int16 format
+    samples = []
+    new_buf_size = int(buffer*(render_rate/sample_rate))
+    a = int(sample_rate/render_rate)
+    for _ in range(0,new_buf_size):
+        n_s = synth.get_next_sample(2,440,time)
+        # for _ in range(0,a):
+        #     samples.append(
+        #         n_s
+        #     )
+        samples.append(
+            n_s
+        )
+        time += 1
+
+    # samples = interpolate(samples)
+
+    # x = np.linspace(0,new_buf_size-1,new_buf_size)
+    # f = interp1d(x, samples, kind = 'linear')
+    #
+    # xnew = np.linspace(0,new_buf_size-1,new_buf_size*int(sample_rate/render_rate))
+    #
+    # samples = f(xnew)
+
+    samples = np.array(samples) * 0.3
+    samples = np.int16(samples.clip(-0.8, 0.8) * 32767)
+    samples = samples.reshape(buffer, -1)
+    return samples, time
+
+time = 0
+while True:
+    samples, time = get_samples(time)
+    stream.write(samples.tobytes())
+
+
 
 arr1 = []
 arr2 = []
@@ -116,80 +183,80 @@ sum = []
 ch1 = []
 ch2 = []
 
-t1 = time.time()
-for t in range(0,int(0.25*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,739.98,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
+# t1 = time.time()
+# for t in range(0,int(10*render_rate)):
+#     osc,sm = synth.get_next_sample(10,440,t)
+#     arr1.append(osc[0])
+#     # arr2.append(osc[1])
+#     sum.append(sm)
+#     # ch1.append(ster[0])
+#     # ch2.append(ster[1])
+#
+# for t in range(0,int(0.5*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,880,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.5*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,987.78,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.75*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,587.32,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.25*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,0.1,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.5*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,987.78,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.25*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,880,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.25*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,784,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
+#
+# for t in range(0,int(0.75*render_rate)):
+#     osc,sm,ster = synth.get_next_sample(10,739.98,t)
+#     arr1.append(osc[0])
+#     arr2.append(osc[1])
+#     sum.append(sm)
+#     ch1.append(ster[0])
+#     ch2.append(ster[1])
 
-for t in range(0,int(0.5*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,880,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.5*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,987.78,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.75*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,587.32,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.25*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,0,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.5*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,987.78,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.25*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,880,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.25*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,784,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-for t in range(0,int(0.75*render_rate)):
-    osc,sm,ster = synth.get_next_sample(10,739.98,t)
-    arr1.append(osc[0])
-    arr2.append(osc[1])
-    sum.append(sm)
-    ch1.append(ster[0])
-    ch2.append(ster[1])
-
-print(" Total time taken is :", time.time() - t1)
+# print(" Total time taken is :", time.time() - t1)
 
 
 plt.subplot(5,1,1)
@@ -234,11 +301,11 @@ def wave_to_file(wav, wav2=None, fname="temp.wav", amp=0.01):
 
     wavfile.write(fname, render_rate, wav)
 
-wave_to_file(ch1,ch2, fname="c_maj7.wav")
+wave_to_file(sum, fname="c_maj7.wav")
 
 plt.show()
 
-fig.savefig('Amplitude Modulation.png', dpi=100)
+# fig.savefig('Amplitude Modulation.png', dpi=100)
 
 
 

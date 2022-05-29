@@ -18,7 +18,7 @@ class LFOModulation:
             osc_val = osc.get_next_sample(amplitude,frequency,time)
             return (1+mod_val)*osc_val/mod_index
         elif(self.type == 1):
-            return osc.get_next_sample(amplitude,frequency,time*(1+mod_val/frequency))
+            return osc.get_next_sample(amplitude,frequency,time*(1+mod_val/(frequency)))
         else:
             delta = render_rate * mod_val / (2*np.pi*frequency)
             return osc.get_next_sample(amplitude,frequency,time+delta)
