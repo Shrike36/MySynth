@@ -88,7 +88,7 @@ lfo_1 = LFO(Oscillator(Type.sine,render_rate))
 
 envelope_1 = Envelope(0.3,0.8,3.8,3.9,0.5,render_rate)
 
-modulation_1 = LFOModulation(ModulationType.am)
+modulation_1 = LFOModulation(ModulationType.fm)
 
 detune_1 = Detune(1/16)
 detune_2 = ModulatedDetune(1/4,lfo_1,2)
@@ -96,13 +96,13 @@ detune_2 = ModulatedDetune(1/4,lfo_1,2)
 wave_adder_1 = WaveAdder(0.8,1)
 
 panner_1 = StereoPanner(1)
-panner_2 = ModulatedPanner(0.2,lfo_1,2)
+panner_2 = ModulatedPanner(0.2,lfo_1,3)
 
 base_oscillator_1 = Oscillator(Type.sine,render_rate)
 base_oscillator_2 = Oscillator(Type.triangle,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.sine,lfo_1,2,envelope_1,modulation_1,1,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.triangle,lfo_1,2,envelope_1,modulation_1,1,render_rate)
 
-synth = Synth(base_oscillator_1,base_oscillator_2,
+synth = Synth(base_oscillator_1,modulated_oscillator,
               detune=detune_1,
               wave_adder=wave_adder_1,
               stereo_panner=panner_2,
@@ -117,24 +117,72 @@ ch1 = []
 ch2 = []
 
 t1 = time.time()
-for t in range(0,3*render_rate):
-    osc,sm,ster = synth.get_next_sample(10,329.63,t)
+for t in range(0,int(0.25*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,739.98,t)
     arr1.append(osc[0])
     arr2.append(osc[1])
     sum.append(sm)
     ch1.append(ster[0])
     ch2.append(ster[1])
 
-for t in range(0,3*render_rate):
-    osc,sm,ster = synth.get_next_sample(10,392,t)
+for t in range(0,int(0.5*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,880,t)
     arr1.append(osc[0])
     arr2.append(osc[1])
     sum.append(sm)
     ch1.append(ster[0])
     ch2.append(ster[1])
 
-for t in range(0,3*render_rate):
-    osc,sm,ster = synth.get_next_sample(10,440,t)
+for t in range(0,int(0.5*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,987.78,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,int(0.75*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,587.32,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,int(0.25*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,0,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,int(0.5*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,987.78,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,int(0.25*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,880,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,int(0.25*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,784,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,int(0.75*render_rate)):
+    osc,sm,ster = synth.get_next_sample(10,739.98,t)
     arr1.append(osc[0])
     arr2.append(osc[1])
     sum.append(sm)

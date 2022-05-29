@@ -17,6 +17,9 @@ class Oscillator:
         self._render_rate = render_rate
 
     def get_next_sample(self,amplitude,frequency,time):
+        print(time)
+        print((frequency*time) % self._render_rate)
+        print('\n')
         t = (int)((frequency*time) % self._render_rate)
         wave = self._wave_generator.waves[self._type]
         return amplitude*wave[t]
