@@ -59,10 +59,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 import time
+
+from Modifiers.Detune import Detune, ModulatedDetune
 from Modifiers.WaveAdder import WaveAdder as wa
 from Modifiers.Panner import StereoPanner as sp
+from Modulation.ParamsModulation import LFOModulation, ModulationType
 from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
+from Oscillators.ModulatedOscillator import ModulatedOscillator
 from Oscillators.Oscillator import Oscillator, Type
 
 #Carrier wave c(t)=A_c*cos(2*pi*f_c*t)
@@ -79,19 +83,35 @@ modulation_index = 6#float(input('Enter modulation index: '))
 render_rate = 20000
 
 print('done')
-synth = Synth(render_rate,True)
+
+lfo_1 = LFO(Oscillator(Type.sine,render_rate))
+
+envelope_1 = Envelope(0.3,0.8,3.8,3.9,0.5,render_rate)
+
+modulation_1 = LFOModulation(ModulationType.am)
+
+detune_1 = Detune(1/16)
+detune_2 = ModulatedDetune(1/4,lfo_1,2)
+
+base_oscillator_1 = Oscillator(Type.sawtooth,render_rate)
+base_oscillator_2 = Oscillator(Type.square,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.sine,lfo_1,2,envelope_1,modulation_1,1,render_rate)
+
+synth = Synth(base_oscillator_1,base_oscillator_2,detune=detune_1,render_rate=render_rate,stereo=True)
 print('done')
 
 arr1 = []
 arr2 = []
 sum = []
 
+for i in range(0,1):
+    print('ffffffffffffffffffffffffffffffff')
+
 t1 = time.time()
 for t in range(0,10*render_rate):
-    osc1, osc2, wave = synth.get_next_sample(10,440,t)
-    arr1.append(osc1)
-    arr2.append(osc2)
-    sum.append(wave)
+    sample = synth.get_next_sample(10,440,t)
+    arr1.append(sample[0])
+    arr2.append(sample[1])
 
 print(" Total time taken is :", time.time() - t1)
 
@@ -133,7 +153,7 @@ def wave_to_file(wav, wav2=None, fname="temp.wav", amp=0.01):
 
     wavfile.write(fname, render_rate, wav)
 
-wave_to_file(sum, fname="c_maj7.wav")
+wave_to_file(arr1,arr2, fname="c_maj7.wav")
 
 plt.show()
 

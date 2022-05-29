@@ -11,13 +11,19 @@ class Type(enum.Enum):
 class Oscillator:
 
     def __init__(self, type : Type, render_rate):
-        self.type = type.value
-        self.wave_generator = WaveGenerator(render_rate)
-        self.render_rate = render_rate
+        self._type = type.value
+        self._is_working = True
+        self._wave_generator = WaveGenerator(render_rate)
+        self._render_rate = render_rate
 
     def get_next_sample(self,amplitude,frequency,time):
-        t = (int)((frequency*time)%self.render_rate)
-        wave = self.wave_generator.waves[self.type]
+        t = (int)((frequency*time) % self._render_rate)
+        wave = self._wave_generator.waves[self._type]
         return amplitude*wave[t]
 
+    def get_type(self):
+        return self._type
+
+    def set_type(self, new_type : Type):
+        self._type = new_type
 

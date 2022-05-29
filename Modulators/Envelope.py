@@ -11,6 +11,8 @@ class Envelope():
         self.sustain_level = sustain_level
         self.render_rate = render_rate
 
+        self.is_working = True
+
         self.values = self.get_values()
 
     def get_values(self):
