@@ -1,7 +1,13 @@
 
 class WaveAdder:
+    def __init__(self,*index):
+        self.indexes = index
 
     '0 <= index <= 1'
-    @staticmethod
-    def get_sum(first_sample, second_sample, index=0):
-        return ((1-index)*first_sample + index*second_sample)
+    def get_sum(self, samples):
+        if (len(samples) > len(self.indexes)):
+            samples += [0]*(len(samples)-len(self.indexes))
+        res = 0
+        for i in range(0,len(samples)):
+            res += samples[i] * self.indexes[i]
+        return res / sum(self.indexes)

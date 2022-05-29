@@ -61,8 +61,8 @@ from scipy.io import wavfile
 import time
 
 from Modifiers.Detune import Detune, ModulatedDetune
-from Modifiers.WaveAdder import WaveAdder as wa
-from Modifiers.Panner import StereoPanner as sp
+from Modifiers.WaveAdder import WaveAdder as wa, WaveAdder
+from Modifiers.Panner import StereoPanner as sp, StereoPanner, ModulatedPanner
 from Modulation.ParamsModulation import LFOModulation, ModulationType
 from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
@@ -93,49 +93,82 @@ modulation_1 = LFOModulation(ModulationType.am)
 detune_1 = Detune(1/16)
 detune_2 = ModulatedDetune(1/4,lfo_1,2)
 
-base_oscillator_1 = Oscillator(Type.sawtooth,render_rate)
-base_oscillator_2 = Oscillator(Type.square,render_rate)
+wave_adder_1 = WaveAdder(0.8,1)
+
+panner_1 = StereoPanner(1)
+panner_2 = ModulatedPanner(0.2,lfo_1,2)
+
+base_oscillator_1 = Oscillator(Type.sine,render_rate)
+base_oscillator_2 = Oscillator(Type.triangle,render_rate)
 modulated_oscillator = ModulatedOscillator(Type.sine,lfo_1,2,envelope_1,modulation_1,1,render_rate)
 
-synth = Synth(base_oscillator_1,base_oscillator_2,detune=detune_1,render_rate=render_rate,stereo=True)
+synth = Synth(base_oscillator_1,base_oscillator_2,
+              detune=detune_1,
+              wave_adder=wave_adder_1,
+              stereo_panner=panner_2,
+              render_rate=render_rate,
+              stereo=True)
 print('done')
 
 arr1 = []
 arr2 = []
 sum = []
-
-for i in range(0,1):
-    print('ffffffffffffffffffffffffffffffff')
+ch1 = []
+ch2 = []
 
 t1 = time.time()
-for t in range(0,10*render_rate):
-    sample = synth.get_next_sample(10,440,t)
-    arr1.append(sample[0])
-    arr2.append(sample[1])
+for t in range(0,3*render_rate):
+    osc,sm,ster = synth.get_next_sample(10,329.63,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,3*render_rate):
+    osc,sm,ster = synth.get_next_sample(10,392,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
+
+for t in range(0,3*render_rate):
+    osc,sm,ster = synth.get_next_sample(10,440,t)
+    arr1.append(osc[0])
+    arr2.append(osc[1])
+    sum.append(sm)
+    ch1.append(ster[0])
+    ch2.append(ster[1])
 
 print(" Total time taken is :", time.time() - t1)
 
 
-plt.subplot(4,1,1)
+plt.subplot(5,1,1)
 plt.title('Amplitude Modulation')
 plt.plot(arr1, 'g')
 plt.ylabel('Amplitude')
 plt.xlabel('Osc1 signal')
 
-plt.subplot(4,1,2)
+plt.subplot(5,1,2)
 plt.plot(arr2, 'r')
 plt.ylabel('Amplitude')
-plt.xlabel('LFO1 signal')
+plt.xlabel('Osc2 signal')
 
-plt.subplot(4,1,3)
+plt.subplot(5,1,3)
 plt.plot(sum, color="purple")
 plt.ylabel('Amplitude')
-plt.xlabel('am')
-#
-# plt.subplot(4,1,4)
-# plt.plot(stereo_r, color="purple")
-# plt.ylabel('Amplitude')
-# plt.xlabel('am')
+plt.xlabel('sum')
+
+plt.subplot(5,1,4)
+plt.plot(ch1, color="purple")
+plt.ylabel('Amplitude')
+plt.xlabel('chanel 1')
+
+plt.subplot(5,1,5)
+plt.plot(ch2, color="purple")
+plt.ylabel('Amplitude')
+plt.xlabel('chanel 2')
 
 plt.subplots_adjust(hspace=1)
 plt.rc('font', size=15)
@@ -153,7 +186,7 @@ def wave_to_file(wav, wav2=None, fname="temp.wav", amp=0.01):
 
     wavfile.write(fname, render_rate, wav)
 
-wave_to_file(arr1,arr2, fname="c_maj7.wav")
+wave_to_file(ch1,ch2, fname="c_maj7.wav")
 
 plt.show()
 

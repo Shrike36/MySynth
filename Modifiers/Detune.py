@@ -31,7 +31,7 @@ class Detune:
 class ModulatedDetune(Detune):
 
     '0 <= value <= 1'
-    def __init__(self, value : float, lfo : LFO, lfo_rate : int):
+    def __init__(self, value : float, lfo : LFO, lfo_rate : float):
         super().__init__(value)
         self.lfo = lfo
         self.lfo_rate = lfo_rate

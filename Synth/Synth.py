@@ -4,15 +4,19 @@ from scipy.io import wavfile
 import time
 
 from Modifiers.Detune import Detune
-from Modifiers.WaveAdder import WaveAdder as wa
-from Modifiers.Panner import StereoPanner as sp
+from Modifiers.WaveAdder import WaveAdder
+from Modifiers.Panner import StereoPanner
 from Modulation.ParamsModulation import ModulationType, LFOModulation
 from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
 from Oscillators.Oscillator import Oscillator, Type
 
 class Synth:
-    def __init__(self, *oscillators : Oscillator, detune : Detune, render_rate : int, stereo : bool):
+    def __init__(self, *oscillators : Oscillator,
+                 detune : Detune,
+                 wave_adder : WaveAdder,
+                 stereo_panner : StereoPanner,
+                 render_rate : int, stereo : bool):
         self.render_rate = render_rate
         self.stereo = stereo
 
@@ -21,13 +25,9 @@ class Synth:
         self.detune = detune
         self.detune.set_ratio(len(oscillators))
 
-        self.detune_lfo = LFO(Oscillator(Type.sine,render_rate))
+        self.wave_adder = wave_adder
 
-        self.wave_adder_index = 0.5
-        self.wave_adder_lfo = LFO(Oscillator(Type.sine,render_rate))
-
-        self.panner_index = 0.5
-        self.panner_lfo = LFO(Oscillator(Type.sine,render_rate))
+        self.stereo_panner = stereo_panner
 
     def get_next_sample(self,amplitude,frequency,time):
         osc_values = []
@@ -39,6 +39,9 @@ class Synth:
             osc_values.append(oscillator.get_next_sample(amplitude,
                                                          frequency*(1+detune_value),
                                                          time))
-        # sample = wa.get_sum(osc1_value,osc2_value,0.5)
+        sample = self.wave_adder.get_sum(osc_values)
 
-        return osc_values
+        if(self.stereo):
+            stereo_sample = self.stereo_panner.get_stereo_sample(sample,time)
+
+        return osc_values,sample,stereo_sample
