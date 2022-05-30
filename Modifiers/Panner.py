@@ -1,4 +1,5 @@
 from Modulators.LFO import LFO
+from numba import njit
 
 
 class StereoPanner:
@@ -25,4 +26,5 @@ class ModulatedPanner(StereoPanner):
         x = self.lfo.get_next_value(self.lfo_rate,time)
         y = x * (self.index-0.5) + 0.5
         return [(1-y)*sample, y*sample]
+
 

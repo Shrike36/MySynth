@@ -1,6 +1,7 @@
 from enum import Enum
 from scipy import signal
 import numpy as np
+from numba import njit
 
 class ModulationType(Enum):
     am = 0
@@ -16,12 +17,29 @@ class LFOModulation:
         mod_val *= mod_index
         if(self.type == 0):
             osc_val = osc.get_next_sample(amplitude,frequency,time)
-            return (1+mod_val)*osc_val/mod_index
+            return self.get_new_amplitude_for_am(mod_val,osc_val,mod_index)
         elif(self.type == 1):
-            return osc.get_next_sample(amplitude,frequency,time*(1+mod_val/(frequency)))
+            return osc.get_next_sample(amplitude,frequency,
+                                       self.get_new_time_for_fm(time, mod_val, frequency))
         else:
-            delta = render_rate * mod_val / (2*np.pi*frequency)
-            return osc.get_next_sample(amplitude,frequency,time+delta)
+            return osc.get_next_sample(amplitude,frequency,
+                                       self.get_new_time_for_fm(time, mod_val, frequency, render_rate))
+
+    @staticmethod
+    @njit
+    def get_new_amplitude_for_am(mod_val,osc_val,mod_index):
+        return (1+mod_val)*osc_val/mod_index
+
+    @staticmethod
+    @njit
+    def get_new_time_for_fm(time, mod_val, frequency, render_rate):
+        delta = render_rate * mod_val / (2*np.pi*frequency)
+        return time+delta
+
+    @staticmethod
+    @njit
+    def get_new_time_for_pm(time, mod_val, frequency):
+        return time*(1+mod_val/(frequency))
 
     # def am_lfo_modulation(osc_val,mod_val,mod_index):
     #     return (1+mod_val)*osc_val/(int(mod_index)+1)

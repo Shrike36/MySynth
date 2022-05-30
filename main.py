@@ -57,10 +57,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+from numba import njit
 from scipy import interpolate
 from scipy.interpolate import interp1d
 from scipy.io import wavfile
-# import time
+import time
 
 from Modifiers.Detune import Detune, ModulatedDetune
 from Modifiers.WaveAdder import WaveAdder as wa, WaveAdder
@@ -108,12 +109,22 @@ base_oscillator_2 = Oscillator(Type.sine,render_rate)
 modulated_oscillator = ModulatedOscillator(Type.sine,lfo_1,3,envelope_1,modulation_1,3,render_rate)
 
 synth = Synth(modulated_oscillator,modulated_oscillator,
-              detune=detune_1,
+              detune=detune_2,
               wave_adder=wave_adder_1,
-              stereo_panner=panner_1,
+              stereo_panner=panner_2,
               render_rate=render_rate,
               stereo=True)
 print('done')
+
+@njit
+def method_a():
+    return 1+2
+
+@njit
+def method_b():
+    return 3+method_a()
+
+print(method_b())
 
 # midi.init()
 # if midi.get_count() > 0:
@@ -165,10 +176,15 @@ def get_samples(time):
     #
     # samples = f(xnew)
 
+    return change_samples(samples), time
+
+@njit()
+def change_samples(samples = np.array([])):
     samples = np.array(samples) * 0.3
-    samples = np.int16(samples.clip(-0.8, 0.8) * 32767)
+    samples = samples.clip(-0.8, 0.8) * 32767
+    samples = samples.astype(np.int16)
     samples = samples.reshape(buffer, -1)
-    return samples, time
+    return samples
 
 time = 0
 while True:
@@ -183,15 +199,15 @@ sum = []
 ch1 = []
 ch2 = []
 
-# t1 = time.time()
-# for t in range(0,int(10*render_rate)):
-#     osc,sm = synth.get_next_sample(10,440,t)
-#     arr1.append(osc[0])
-#     # arr2.append(osc[1])
-#     sum.append(sm)
-#     # ch1.append(ster[0])
-#     # ch2.append(ster[1])
-#
+t1 = time.time()
+for t in range(0,int(10*render_rate)):
+    sm = synth.get_next_sample(10,440,t)
+    # arr1.append(osc[0])
+    # arr2.append(osc[1])
+    sum.append(sm)
+    # ch1.append(ster[0])
+    # ch2.append(ster[1])
+
 # for t in range(0,int(0.5*render_rate)):
 #     osc,sm,ster = synth.get_next_sample(10,880,t)
 #     arr1.append(osc[0])
@@ -256,7 +272,7 @@ ch2 = []
 #     ch1.append(ster[0])
 #     ch2.append(ster[1])
 
-# print(" Total time taken is :", time.time() - t1)
+print(" Total time taken is :", time.time() - t1)
 
 
 plt.subplot(5,1,1)

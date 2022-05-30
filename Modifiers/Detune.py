@@ -1,5 +1,5 @@
 from Modulators.LFO import LFO
-
+from numba import njit
 
 class Detune:
 
@@ -11,6 +11,23 @@ class Detune:
         self.counter = 0
 
     def set_ratio(self, count_of_oscs : int):
+        self.ratio = self.set_ratio_numba(count_of_oscs)
+
+    def get_next_value(self,time):
+        if(self.counter >= len(self.ratio)):
+            self.counter = 0
+        index = self.counter
+        self.counter += 1
+        return self.value * self.ratio[index]
+
+    @staticmethod
+    @njit(cache=True)
+    def get_next_value_numba(value,ratio,index,time):
+        return value * ratio[index]
+
+    @staticmethod
+    @njit(cache=True)
+    def set_ratio_numba(count_of_oscs : int):
         minus = []
         plus = []
         max = int(count_of_oscs/2)+1
@@ -19,14 +36,7 @@ class Detune:
             plus.append(1/(max-i))
         if not (count_of_oscs % 2 == 0):
             minus.append(0)
-        self.ratio = minus + plus
-
-    def get_next_value(self,time):
-        if(self.counter >= len(self.ratio)):
-            self.counter = 0
-        index = self.counter
-        self.counter += 1
-        return self.value * self.ratio[index]
+        return minus + plus
 
 class ModulatedDetune(Detune):
 

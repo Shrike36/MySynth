@@ -1,6 +1,7 @@
 import numpy as np
 import enum
 from Oscillators.WaveGenerator import WaveGenerator
+from numba import njit
 
 class Type(enum.Enum):
     sine=0
@@ -17,8 +18,13 @@ class Oscillator:
         self._render_rate = render_rate
 
     def get_next_sample(self,amplitude,frequency,time):
-        t = (int)((frequency*time) % self._render_rate)
         wave = self._wave_generator.waves[self._type]
+        return self.get_next_sample_numba(amplitude,frequency,time,self._render_rate,wave)
+
+    @staticmethod
+    @njit(cache=True)
+    def get_next_sample_numba(amplitude,frequency,time,render_rate,wave):
+        t = (int)((frequency*time) % render_rate)
         return amplitude*wave[t]
 
     def get_type(self):
