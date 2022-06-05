@@ -85,8 +85,8 @@ A_m = 5#float(input('Enter message amplitude: '))
 f_m = 1#float(input('Enter message frquency: '))
 modulation_index = 6#float(input('Enter modulation index: '))
 
-render_rate = 18000
-sample_rate = 18000
+render_rate = 22000
+sample_rate = 22000
 buffer = 2048
 
 print('done')
@@ -102,19 +102,19 @@ modulation_1 = LFOModulation(ModulationType.fm)
 detune_1 = Detune(1/4)
 detune_2 = ModulatedDetune(1/4,lfo_1,2)
 
-wave_adder_1 = WaveAdder(1,1)
+wave_adder_1 = WaveAdder(1,1,0.5)
 
 panner_1 = StereoPanner(0.3)
 panner_2 = ModulatedPanner(0.2,lfo_1,4)
 
 base_oscillator_1 = Oscillator(Type.sawtooth,wave_generator,render_rate)
 base_oscillator_2 = Oscillator(Type.sine,wave_generator,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.sine,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.sawtooth,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
 
-synth = Synth(modulated_oscillator,
+synth = Synth(modulated_oscillator,modulated_oscillator,
               detune=detune_1,
               wave_adder=wave_adder_1,
-              stereo_panner=panner_1,
+              stereo_panner=panner_2,
               render_rate=render_rate,
               stereo=True)
 print('done')

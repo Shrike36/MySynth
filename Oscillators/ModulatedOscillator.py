@@ -26,6 +26,6 @@ class ModulatedOscillator(Oscillator):
                                                              time, self._render_rate)
         else:
             osc_value = super().get_next_sample(amplitude,frequency,time)
-        # if(self.envelope.is_working):
-        #     osc_value *= self.envelope.get_next_value(time)
+        if(self.envelope.is_working):
+            osc_value *= self.envelope.get_next_value(time)
         return osc_value
