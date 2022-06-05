@@ -4,3 +4,6 @@ class LFO():
 
     def get_next_value(self,frequency,time):
         return self.lfo_osc.get_next_sample(1,frequency,time)
+
+    def get_next_integral(self,frequency,time):
+        return self.lfo_osc.get_next_integral(frequency,time)

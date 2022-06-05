@@ -76,6 +76,7 @@ import pyaudio
 #Carrier wave c(t)=A_c*cos(2*pi*f_c*t)
 #Modulating wave m(t)=A_m*cos(2*pi*f_m*t)
 #Modulated wave s(t)=A_c[1+mu*cos(2*pi*f_m*t)]cos(2*pi*f_c*t)
+from Oscillators.WaveGenerator import WaveGenerator
 from Synth.Synth import Synth
 
 A_c = 5#float(input('Enter carrier amplitude: '))
@@ -90,41 +91,33 @@ buffer = 2048
 
 print('done')
 
-lfo_1 = LFO(Oscillator(Type.sine,render_rate))
+wave_generator = WaveGenerator(render_rate)
+
+lfo_1 = LFO(Oscillator(Type.sawtooth,wave_generator,render_rate))
 
 envelope_1 = Envelope(0.3,0.8,3.8,3.9,0.5,render_rate)
 
-modulation_1 = LFOModulation(ModulationType.pm)
+modulation_1 = LFOModulation(ModulationType.fm)
 
-detune_1 = Detune(0)
+detune_1 = Detune(1/4)
 detune_2 = ModulatedDetune(1/4,lfo_1,2)
 
-wave_adder_1 = WaveAdder(0.8,1,0.5)
+wave_adder_1 = WaveAdder(1,1)
 
 panner_1 = StereoPanner(0.3)
 panner_2 = ModulatedPanner(0.2,lfo_1,4)
 
-base_oscillator_1 = Oscillator(Type.sine,render_rate)
-base_oscillator_2 = Oscillator(Type.sine,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.sine,lfo_1,3,envelope_1,modulation_1,3,render_rate)
+base_oscillator_1 = Oscillator(Type.sawtooth,wave_generator,render_rate)
+base_oscillator_2 = Oscillator(Type.sine,wave_generator,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.sine,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
 
-synth = Synth(modulated_oscillator,modulated_oscillator,
-              detune=detune_2,
+synth = Synth(modulated_oscillator,
+              detune=detune_1,
               wave_adder=wave_adder_1,
-              stereo_panner=panner_2,
+              stereo_panner=panner_1,
               render_rate=render_rate,
               stereo=True)
 print('done')
-
-@njit
-def method_a():
-    return 1+2
-
-@njit
-def method_b():
-    return 3+method_a()
-
-print(method_b())
 
 # midi.init()
 # if midi.get_count() > 0:
@@ -191,22 +184,41 @@ while True:
     samples, time = get_samples(time)
     stream.write(samples.tobytes())
 
+#
+#
+# base_oscillator_3 = Oscillator(Type.sine,render_rate)
+# base_oscillator_4 = Oscillator(Type.square,render_rate)
+# base_oscillator_5 = Oscillator(Type.sawtooth,render_rate)
+# base_oscillator_6 = Oscillator(Type.triangle,render_rate)
 
 
 arr1 = []
 arr2 = []
+arr3 = []
+arr4 = []
 sum = []
 ch1 = []
 ch2 = []
 
 t1 = time.time()
 for t in range(0,int(10*render_rate)):
-    sm = synth.get_next_sample(10,440,t)
-    # arr1.append(osc[0])
-    # arr2.append(osc[1])
+    sm = synth.get_next_sample(10,8,t)
+    # arr1.append(base_oscillator_1.get_next_sample(10,6,t))
+    # arr2.append(base_oscillator_2.get_next_sample(10,8,t))
+
+    # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
+    arr2.append(lfo_1.get_next_integral(3,t))
     sum.append(sm)
     # ch1.append(ster[0])
     # ch2.append(ster[1])
+
+# for t in range(0,int(10*render_rate)):
+#     arr1.append(base_oscillator_3.get_next_sample(10,5,t))
+#     arr2.append(base_oscillator_4.get_next_sample(10,5,t))
+#     arr3.append(base_oscillator_5.get_next_sample(10,5,t))
+#     arr4.append(base_oscillator_6.get_next_sample(10,5,t))
+#     # ch1.append(ster[0])
+#     # ch2.append(ster[1])
 
 # for t in range(0,int(0.5*render_rate)):
 #     osc,sm,ster = synth.get_next_sample(10,880,t)
@@ -275,31 +287,31 @@ for t in range(0,int(10*render_rate)):
 print(" Total time taken is :", time.time() - t1)
 
 
-plt.subplot(5,1,1)
-plt.title('Amplitude Modulation')
+plt.subplot(3,1,1)
+plt.title('Summator')
 plt.plot(arr1, 'g')
 plt.ylabel('Amplitude')
-plt.xlabel('Osc1 signal')
+plt.xlabel('osc 1')
 
-plt.subplot(5,1,2)
+plt.subplot(3,1,2)
 plt.plot(arr2, 'r')
 plt.ylabel('Amplitude')
-plt.xlabel('Osc2 signal')
+plt.xlabel('osc 2')
 
-plt.subplot(5,1,3)
+plt.subplot(3,1,3)
 plt.plot(sum, color="purple")
 plt.ylabel('Amplitude')
-plt.xlabel('sum')
-
-plt.subplot(5,1,4)
-plt.plot(ch1, color="purple")
-plt.ylabel('Amplitude')
-plt.xlabel('chanel 1')
-
-plt.subplot(5,1,5)
-plt.plot(ch2, color="purple")
-plt.ylabel('Amplitude')
-plt.xlabel('chanel 2')
+plt.xlabel('Sum')
+#
+# plt.subplot(4,1,4)
+# plt.plot(arr4, color="purple")
+# plt.ylabel('Amplitude')
+# plt.xlabel('Triangle')
+#
+# plt.subplot(5,1,5)
+# plt.plot(ch2, color="purple")
+# plt.ylabel('Amplitude')
+# plt.xlabel('chanel 2')
 
 plt.subplots_adjust(hspace=1)
 plt.rc('font', size=15)

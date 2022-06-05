@@ -13,17 +13,22 @@ class LFOModulation:
         self.is_working = True
         self.type = type.value
 
-    def get_modulated_sample(self,osc,amplitude,frequency,mod_val,mod_index,time,render_rate):
-        mod_val *= mod_index
+    def get_modulated_sample(self, osc, osc_amplitude, osc_frequency,
+                             lfo, lfo_frequencey, mod_index,
+                             time, render_rate):
+        # mod_val *= mod_index
         if(self.type == 0):
-            osc_val = osc.get_next_sample(amplitude,frequency,time)
+            mod_val = mod_index*lfo.get_next_value(lfo_frequencey,time)
+            osc_val = osc.get_next_sample(osc_amplitude, osc_frequency, time)
             return self.get_new_amplitude_for_am(mod_val,osc_val,mod_index)
         elif(self.type == 1):
-            return osc.get_next_sample(amplitude,frequency,
-                                       self.get_new_time_for_fm(time, mod_val, frequency))
+            mod_val = mod_index*lfo.get_next_integral(lfo_frequencey,time)
+            return osc.get_next_sample(osc_amplitude, osc_frequency,
+                                       self.get_new_time_for_fm(time, mod_val, osc_frequency, render_rate))
         else:
-            return osc.get_next_sample(amplitude,frequency,
-                                       self.get_new_time_for_fm(time, mod_val, frequency, render_rate))
+            mod_val = mod_index*lfo.get_next_value(lfo_frequencey,time)
+            return osc.get_next_sample(osc_amplitude, osc_frequency,
+                                       self.get_new_time_for_pm(time, mod_val, osc_frequency, render_rate))
 
     @staticmethod
     @njit
@@ -32,14 +37,15 @@ class LFOModulation:
 
     @staticmethod
     @njit
-    def get_new_time_for_fm(time, mod_val, frequency, render_rate):
+    def get_new_time_for_pm(time, mod_val, frequency, render_rate):
         delta = render_rate * mod_val / (2*np.pi*frequency)
         return time+delta
 
     @staticmethod
     @njit
-    def get_new_time_for_pm(time, mod_val, frequency):
-        return time*(1+mod_val/(frequency))
+    def get_new_time_for_fm(time, mod_val, frequency, render_rate):
+        delta = render_rate * mod_val / frequency
+        return time+delta
 
     # def am_lfo_modulation(osc_val,mod_val,mod_index):
     #     return (1+mod_val)*osc_val/(int(mod_index)+1)
