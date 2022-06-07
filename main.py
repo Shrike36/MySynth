@@ -1,60 +1,3 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-# import math
-# import librosa
-# import itertools
-# import numpy as np
-# import seaborn as sns
-# import matplotlib.pyplot as plt
-#
-# def plot(xy, r=1,c=1,i=1,title="", xlabel="",ylabel="",yticks=None, xticks=None,**plot_kwargs):
-#     plt.subplot(r,c,i)
-#     plt.title(title)
-#     if len(xy) == 2:
-#         plt.plot(*xy, **plot_kwargs)
-#     else:
-#         plt.plot(xy, **plot_kwargs)
-#
-#     if xticks is not None: plt.xticks(xticks)
-#     if yticks is not None: plt.yticks(yticks)
-#     plt.ylabel(ylabel)
-#     plt.xlabel(xlabel)
-#
-# class SineOscillator():
-#     def __init__(self, freq):
-#         self.freq = freq
-#
-#     def gatValue(self, t):
-#         return math.sin(math.radians(2*math.pi*self.freq*t))
-#
-# class LFO():
-#     def getValueAm(self, osc, lfo, t):
-#         return osc.gatValue(t)*lfo.gatValue(t)
-#
-# osc = SineOscillator(10)
-# lfo = SineOscillator(2)
-# mod = LFO()
-# values_osc = []
-# values_lfo = []
-# values_mod = []
-#
-# for t in range (0,5000):
-#     values_osc.append(osc.gatValue(t))
-#     values_lfo.append(lfo.gatValue(t))
-#     values_mod.append(mod.getValueAm(osc,lfo,t))
-#
-# fig = plt.figure(figsize=(8*2,4*2))
-#
-# plot(values_osc, label=f"Sine Wave", xlabel="samples", ylabel="amplitude")
-# plot(values_lfo, label=f"Sine Wave", xlabel="samples", ylabel="amplitude")
-# plot(values_mod, label=f"Sine Wave", xlabel="samples", ylabel="amplitude")
-#
-# plt.legend(loc='lower right')
-# plt.show()
-# fig.savefig("sine.jpg")
-
 import numpy as np
 import matplotlib.pyplot as plt
 from numba import njit
@@ -85,9 +28,9 @@ A_m = 5#float(input('Enter message amplitude: '))
 f_m = 1#float(input('Enter message frquency: '))
 modulation_index = 6#float(input('Enter modulation index: '))
 
-render_rate = 22000
-sample_rate = 22000
-buffer = 2048
+render_rate = 20000
+sample_rate = 20000
+buffer = 2000
 
 print('done')
 
@@ -109,12 +52,12 @@ panner_2 = ModulatedPanner(0.2,lfo_1,4)
 
 base_oscillator_1 = Oscillator(Type.sawtooth,wave_generator,render_rate)
 base_oscillator_2 = Oscillator(Type.sine,wave_generator,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.sawtooth,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.sine,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
 
 synth = Synth(modulated_oscillator,modulated_oscillator,
               detune=detune_1,
               wave_adder=wave_adder_1,
-              stereo_panner=panner_2,
+              stereo_panner=panner_1,
               render_rate=render_rate,
               stereo=True)
 print('done')
@@ -171,7 +114,7 @@ def get_samples(time):
 
     return change_samples(samples), time
 
-@njit()
+@njit
 def change_samples(samples = np.array([])):
     samples = np.array(samples) * 0.3
     samples = samples.clip(-0.8, 0.8) * 32767
@@ -207,7 +150,7 @@ for t in range(0,int(10*render_rate)):
     # arr2.append(base_oscillator_2.get_next_sample(10,8,t))
 
     # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
-    arr2.append(lfo_1.get_next_integral(3,t))
+    # arr2.append(lfo_1.get_next_integral(3,t))
     sum.append(sm)
     # ch1.append(ster[0])
     # ch2.append(ster[1])

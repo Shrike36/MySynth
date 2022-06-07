@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import enum
 from Oscillators.WaveGenerator import WaveGenerator
@@ -17,7 +19,9 @@ class Oscillator:
         self.wave_generator = wave_generator
         self._render_rate = render_rate
 
-    def get_next_sample(self,amplitude,frequency,time):
+    def get_next_sample(self,amplitude,frequency,time,pressed=True,time_up=sys.maxsize/2):
+        if(frequency<1) or not pressed:
+            return 0
         wave = self.wave_generator.waves[self._type]
         return self.get_next_sample_numba(amplitude,frequency,time,self._render_rate,wave)
 

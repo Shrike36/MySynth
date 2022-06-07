@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
@@ -29,16 +31,18 @@ class Synth:
 
         self.stereo_panner = stereo_panner
 
-    def get_next_sample(self,amplitude,frequency,time):
+    def get_next_sample(self,amplitude,frequency,time,pressed=True,time_up=sys.maxsize/2):
         osc_values = []
         for oscillator in self.oscillators:
             if self.detune.is_working:
                 detune_value = self.detune.get_next_value(time)
             else:
                 detune_value = 0
-            osc_values.append(oscillator.get_next_sample(amplitude,
-                                                         frequency*(1+detune_value),
-                                                         time))
+            osc_values.append(oscillator.get_next_sample(amplitude=amplitude,
+                                                         frequency=frequency*(1+detune_value),
+                                                         time=time,
+                                                         pressed=pressed,
+                                                         time_up=time_up))
         sample = self.wave_adder.get_sum(osc_values)
 
         if(self.stereo):

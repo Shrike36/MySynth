@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import enum
 
@@ -18,7 +20,9 @@ class ModulatedOscillator(Oscillator):
         self.envelope = envelope
         self.modulation = modulation
 
-    def get_next_sample(self,amplitude,frequency,time):
+    def get_next_sample(self,amplitude,frequency,time,pressed=True,time_up=sys.maxsize/2):
+        if(frequency < 1):
+            return 0
         if(self.modulation.is_working):
             # lfo_value = self.lfo.get_next_value(self.lfo_rate,time)
             osc_value = self.modulation.get_modulated_sample(super(), amplitude, frequency,
@@ -27,5 +31,5 @@ class ModulatedOscillator(Oscillator):
         else:
             osc_value = super().get_next_sample(amplitude,frequency,time)
         if(self.envelope.is_working):
-            osc_value *= self.envelope.get_next_value(time)
+            osc_value *= self.envelope.get_next_value(time,pressed,time_up)
         return osc_value
