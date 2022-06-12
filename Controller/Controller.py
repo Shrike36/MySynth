@@ -6,7 +6,7 @@ from Synth.Synth import Synth
 
 
 class Controller:
-    def __init__(self, synth, sample_rate = 30000, buffer_size = 64):
+    def __init__(self, synth, sample_rate = 30000, buffer_size = 256):
         self.midi_port = None
         self.midi_interface = None
         self.sample_rate = sample_rate
@@ -46,13 +46,14 @@ class Controller:
             t = threading.Thread(target=self.render)
             t.start()
 
+
+    'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
     def render(self):
 
         start = 0
         end = self.buffer_size
         prev_state = False
         time_up = 0
-        currentFreq = 0
 
         while self.running:
 
@@ -65,27 +66,14 @@ class Controller:
                 if pressed:
                     start = 0
                     end = self.buffer_size
-                    for t in range(start, end):
-                        sample.append(self.synth.get_next_sample(amplitude=0.6,
-                                                                 frequency=currentFreq,
-                                                                 time=t))
                 else:
                     time_up = start
-                    for t in range(start, end):
-                        sample.append(self.synth.get_next_sample(amplitude=0.6,
-                                                                 frequency=currentFreq,
-                                                                 time=t,
-                                                                 pressed=pressed,time_up=time_up))
-            else:
-                if pressed:
-                    for t in range(start, end):
-                        sample.append(self.synth.get_next_sample(amplitude=0.6,
-                                                                 frequency=currentFreq,
-                                                                 time=t))
-                else:
-                    for t in range(start, end):
-                        sample.append(self.synth.get_next_sample(0.6,currentFreq,t,
-                                                                 pressed=pressed,time_up=time_up))
+
+            for t in range(start, end):
+                sample.append(self.synth.get_next_sample(amplitude=0.6,
+                                                         frequency=currentFreq,
+                                                         time=t,
+                                                         pressed=pressed,time_up=time_up))
 
             self.stream.write(np.array(sample, dtype=np.float32).tostring())
 

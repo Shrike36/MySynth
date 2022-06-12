@@ -54,8 +54,9 @@ class Envelope():
                 return 0
             return self.values[time]
         else:
-            time += self.len - self.release_len - time_up
-            if time >= self.len:
+            delta = self.len - self.release_len - time_up
+            time += delta
+            if time >= self.len or delta < 0:
                 return 0
             return self.values[time]
 

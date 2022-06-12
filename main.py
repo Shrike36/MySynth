@@ -36,7 +36,7 @@ print('done')
 
 wave_generator = WaveGenerator(render_rate)
 
-lfo_1 = LFO(Oscillator(Type.sawtooth,wave_generator,render_rate))
+lfo_1 = LFO(Oscillator(Type.sine,wave_generator,render_rate))
 
 envelope_1 = Envelope(0.3,0.8,3.8,3.9,0.5,render_rate)
 
@@ -52,9 +52,9 @@ panner_2 = ModulatedPanner(0.2,lfo_1,4)
 
 base_oscillator_1 = Oscillator(Type.sawtooth,wave_generator,render_rate)
 base_oscillator_2 = Oscillator(Type.sine,wave_generator,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.sine,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.sine,wave_generator,lfo_1,2,envelope_1,modulation_1,2,render_rate)
 
-synth = Synth(modulated_oscillator,modulated_oscillator,
+synth = Synth(modulated_oscillator,
               detune=detune_1,
               wave_adder=wave_adder_1,
               stereo_panner=panner_1,
@@ -122,10 +122,10 @@ def change_samples(samples = np.array([])):
     samples = samples.reshape(buffer, -1)
     return samples
 
-time = 0
-while True:
-    samples, time = get_samples(time)
-    stream.write(samples.tobytes())
+# time = 0
+# while True:
+#     samples, time = get_samples(time)
+#     stream.write(samples.tobytes())
 
 #
 #
@@ -144,10 +144,11 @@ ch1 = []
 ch2 = []
 
 t1 = time.time()
-for t in range(0,int(10*render_rate)):
-    sm = synth.get_next_sample(10,8,t)
-    # arr1.append(base_oscillator_1.get_next_sample(10,6,t))
-    # arr2.append(base_oscillator_2.get_next_sample(10,8,t))
+for t in range(0,int(1*render_rate)):
+    aa,sm = synth.get_next_sample(10,10,t)
+    # arr1.append(aa[0])
+    arr1.append(base_oscillator_2.get_next_sample(10,1,t))
+    arr2.append(base_oscillator_2.get_next_sample(10,2,t))
 
     # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
     # arr2.append(lfo_1.get_next_integral(3,t))
@@ -230,21 +231,21 @@ for t in range(0,int(10*render_rate)):
 print(" Total time taken is :", time.time() - t1)
 
 
-plt.subplot(3,1,1)
-plt.title('Summator')
+plt.subplot(2,1,1)
+# plt.title('FM')
 plt.plot(arr1, 'g')
 plt.ylabel('Amplitude')
-plt.xlabel('osc 1')
+# plt.xlabel('Osc')
 
-plt.subplot(3,1,2)
+plt.subplot(2,1,2)
 plt.plot(arr2, 'r')
 plt.ylabel('Amplitude')
-plt.xlabel('osc 2')
+# plt.xlabel('Modulated Osc')
 
-plt.subplot(3,1,3)
-plt.plot(sum, color="purple")
-plt.ylabel('Amplitude')
-plt.xlabel('Sum')
+# plt.subplot(3,1,3)
+# plt.plot(sum, color="purple")
+# plt.ylabel('Amplitude')
+# plt.xlabel('Sum')
 #
 # plt.subplot(4,1,4)
 # plt.plot(arr4, color="purple")

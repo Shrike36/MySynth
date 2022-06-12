@@ -1,11 +1,3 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from numba import njit
-from scipy import interpolate
-from scipy.interpolate import interp1d
-from scipy.io import wavfile
-import time
-
 import rtmidi
 
 from Controller.Controller import Controller
@@ -17,11 +9,6 @@ from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
 from Oscillators.ModulatedOscillator import ModulatedOscillator
 from Oscillators.Oscillator import Oscillator, Type
-from pygame import midi
-import pyaudio
-#Carrier wave c(t)=A_c*cos(2*pi*f_c*t)
-#Modulating wave m(t)=A_m*cos(2*pi*f_m*t)
-#Modulated wave s(t)=A_c[1+mu*cos(2*pi*f_m*t)]cos(2*pi*f_c*t)
 from Oscillators.WaveGenerator import WaveGenerator
 from Synth.Synth import Synth
 
@@ -31,7 +18,7 @@ A_m = 5#float(input('Enter message amplitude: '))
 f_m = 1#float(input('Enter message frquency: '))
 modulation_index = 6#float(input('Enter modulation index: '))
 
-render_rate = 40000
+render_rate = 30000
 
 print('done')
 
@@ -53,7 +40,7 @@ panner_2 = ModulatedPanner(0.2,lfo_1,4)
 
 base_oscillator_1 = Oscillator(Type.sawtooth,wave_generator,render_rate)
 base_oscillator_2 = Oscillator(Type.sine,wave_generator,render_rate)
-modulated_oscillator = ModulatedOscillator(Type.sawtooth,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
+modulated_oscillator = ModulatedOscillator(Type.triangle,wave_generator,lfo_1,3,envelope_1,modulation_1,1,render_rate)
 
 synth = Synth(modulated_oscillator,modulated_oscillator,
               detune=detune_1,
