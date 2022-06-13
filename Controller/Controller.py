@@ -1,7 +1,12 @@
 import threading
 import pyaudio
+from numba import njit
+
 from Controller.midi import MidiInterface
 import numpy as np
+from scipy.interpolate import interp1d
+from multiprocessing import Process
+
 from Synth.Synth import Synth
 
 
@@ -15,10 +20,19 @@ class Controller:
         self.stream = self.settings(1, self.sample_rate, True, self.buffer_size)
         self.stream.start_stream()
 
+        self.fade_seq = 64
+        self.smooth_buffer = np.zeros(self.fade_seq)
+        self.coefficients = np.linspace(0, 1, self.fade_seq)
+        self.coefficientsR = self.coefficients[::-1]
+
         self.synth = synth
+
+        self.lfo_rate = 1
 
         self.running = False
         self.pressed = False
+
+        self.process = threading.Thread(target=self.render,daemon=True)
 
     def settings(self, channels, rate, output, buffer_size):
         return self.p.open(format=pyaudio.paFloat32,
@@ -43,8 +57,18 @@ class Controller:
         elif not self.running:
             print("active")
             self.running = True
-            t = threading.Thread(target=self.render)
-            t.start()
+            # t = threading.Thread(target=self.render)
+            # t.start()
+            self.process.start()
+            # t = Process(target=self.render)
+            # t.start()
+
+    @staticmethod
+    @njit(cache=True)
+    def smooth(signal,buffer,coef_up,coef_down,fade_len):
+        for i in range(0,fade_len):
+            signal[i] = coef_up[i] * signal[i] + coef_down[i] * buffer[i]
+        return signal
 
 
     'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
@@ -57,7 +81,8 @@ class Controller:
 
         while self.running:
 
-            sample = []
+            sample = np.empty(self.buffer_size)
+            buffer = np.empty(self.buffer_size)
 
             pressed = self.midi_interface.pressed
             currentFreq = self.midi_interface.currentFreq
@@ -69,17 +94,35 @@ class Controller:
                 else:
                     time_up = start
 
-            for t in range(start, end):
-                sample.append(self.synth.get_next_sample(amplitude=0.6,
+            i = 0
+            time = start
+            while time < end:
+                sample[i] = self.synth.get_next_sample(amplitude=0.6,
                                                          frequency=currentFreq,
-                                                         time=t,
-                                                         pressed=pressed,time_up=time_up))
+                                                         time=time,
+                                                         pressed=pressed,time_up=time_up)
+                i += 1
+                time += 1
 
-            self.stream.write(np.array(sample, dtype=np.float32).tostring())
+            i = 0
+            time = end
+            while i < self.fade_seq:
+                buffer[i] = self.synth.get_next_sample(amplitude=0.6,
+                                                       frequency=currentFreq,
+                                                       time=time,
+                                                       pressed=pressed,time_up=time_up)
+                i += 1
+                time += 1
+
+            sample = self.smooth(sample,self.smooth_buffer,self.coefficients,self.coefficientsR,self.fade_seq)
+
+            self.stream.write(sample.astype(np.float32).tostring())
 
             start = end
             end += self.buffer_size
             prev_state = pressed
+
+            self.smooth_buffer = buffer
 
             # if pressed:
             #     currentFreq = self.midi_interface.currentFreq

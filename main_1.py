@@ -20,8 +20,6 @@ modulation_index = 6#float(input('Enter modulation index: '))
 
 render_rate = 30000
 
-print('done')
-
 wave_generator = WaveGenerator(render_rate)
 
 lfo_1 = LFO(Oscillator(Type.sine,wave_generator,render_rate))

@@ -46,17 +46,17 @@ class LFOModulation:
     #                                    time + render_rate * mod_index * lfo_val / (2*np.pi*osc_frequency))
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def get_new_amplitude_for_am(osc_val,lfo_val,mod_index):
         return (1+mod_index*lfo_val)*osc_val/mod_index
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def get_new_time_for_pm(time,lfo_val,mod_index,frequency,render_rate):
         return time + render_rate * mod_index * lfo_val / (2*np.pi*frequency)
 
     @staticmethod
-    @njit
+    @njit(cache=True)
     def get_new_time_for_fm(time,lfo_val,mod_index,frequency,render_rate):
         return time + render_rate * mod_index * lfo_val / frequency
 

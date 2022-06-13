@@ -17,8 +17,19 @@ from PyQt5.QtWidgets import *
 
 import pyqtgraph as pg
 
+import rtmidi
+
+from Controller.Controller import Controller
+from Modifiers.Detune import Detune, ModulatedDetune
+from Modifiers.WaveAdder import WaveAdder as wa, WaveAdder
+from Modifiers.Panner import StereoPanner as sp, StereoPanner, ModulatedPanner
+from Modulation.ParamsModulation import LFOModulation, ModulationType
 from Modulators.Envelope import Envelope
+from Modulators.LFO import LFO
+from Oscillators.ModulatedOscillator import ModulatedOscillator
+from Oscillators.Oscillator import Oscillator, Type
 from Oscillators.WaveGenerator import WaveGenerator
+from Synth.Synth import Synth
 
 
 class Ui_MainWindow(object):
@@ -122,6 +133,8 @@ class Ui_MainWindow(object):
         self.lfo_1_rate_dial.setObjectName(u"lfo_1_rate_dial")
         self.lfo_1_rate_dial.setGeometry(QRect(310, 380, 50, 64))
         self.lfo_1_rate_dial.setNotchesVisible(True)
+        self.lfo_1_rate_dial.valueChanged.connect(self.lfo_1_rate_dial_moved)
+        # self.lfo_1_rate_dial.setNotchTarget(10)
         self.label_4 = QLabel(self.centralwidget)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setGeometry(QRect(320, 370, 47, 14))
@@ -513,8 +526,8 @@ class Ui_MainWindow(object):
         self.pen = pg.mkPen(color=(255, 0, 0), width=5)
         self.pen_1 = pg.mkPen(color=(0, 255, 0), width=5)
         self.wave_gen = WaveGenerator(20000)
-        self.envelope_1 = Envelope(0.3,0.2,3.8,0.9,0.8,20000)
-        self.envelope_2 = Envelope(0.5,0.5,2,5.9,0.5,20000)
+        self.envelope_1_a = Envelope(0.3, 0.2, 3.8, 0.9, 0.8, 20000)
+        self.envelope_2_a = Envelope(0.5, 0.5, 2, 5.9, 0.5, 20000)
 
         self.osc_1_view = pg.PlotWidget()
         self.osc_1_view.setBackground('w')
@@ -535,6 +548,7 @@ class Ui_MainWindow(object):
         self.osc_2_view.plot(self.wave_gen.sawtooth_wave,pen=self.pen_1)
 
         self.lfo_1_view = pg.PlotWidget()
+        self.lfo_1_view.enableMouse(False)
         self.lfo_1_view.setBackground('w')
         self.lfo_1_view.setXRange(0, 20000, padding=0)
         self.lfo_1_view.setYRange(-1.2, 1.2, padding=0)
@@ -559,7 +573,7 @@ class Ui_MainWindow(object):
         self.adsr_1_view.hideAxis('bottom')
         self.adsr_1_view.hideAxis('left')
         self.adsr_1_layout.addWidget(self.adsr_1_view)
-        self.adsr_1_view.plot(self.envelope_1.values,pen=self.pen)
+        self.adsr_1_view.plot(self.envelope_1_a.values, pen=self.pen)
 
         self.adsr_2_view = pg.PlotWidget()
         self.adsr_2_view.setBackground('w')
@@ -568,13 +582,92 @@ class Ui_MainWindow(object):
         self.adsr_2_view.hideAxis('bottom')
         self.adsr_2_view.hideAxis('left')
         self.adsr_2_layout.addWidget(self.adsr_2_view)
-        self.adsr_2_view.plot(self.envelope_2.values,pen=self.pen_1)
+        self.adsr_2_view.plot(self.envelope_2_a.values, pen=self.pen_1)
+
+        self.render_rate = 22000
+
+        self.wave_generator = WaveGenerator(self.render_rate)
+
+        self.lfo_1 = LFO(Oscillator(Type.sine,self.wave_generator,self.render_rate))
+
+        self.envelope_1 = Envelope(0.5,0.4,3.8,0.9,0.8,self.render_rate)
+
+        self.modulation_1 = LFOModulation(ModulationType.fm)
+
+        self.detune_1 = Detune(1/16)
+        self.detune_2 = ModulatedDetune(1/4,self.lfo_1,2)
+
+        self.wave_adder_1 = WaveAdder(1,1,0.5)
+
+        self.panner_1 = StereoPanner(0.3)
+        self.panner_2 = ModulatedPanner(0.2,self.lfo_1,4)
+
+        self.base_oscillator_1 = Oscillator(Type.sawtooth,self.wave_generator,self.render_rate)
+        self.base_oscillator_2 = Oscillator(Type.sine,self.wave_generator,self.render_rate)
+        self.modulated_oscillator = ModulatedOscillator(Type.triangle,self.wave_generator,self.lfo_1,3,self.envelope_1,
+                                                        self.modulation_1,1,self.render_rate)
+
+        self.synth = Synth(self.modulated_oscillator,self.modulated_oscillator,
+                           detune=self.detune_1,
+                           wave_adder=self.wave_adder_1,
+                           stereo_panner=self.panner_1,
+                           render_rate=self.render_rate,
+                           stereo=False)
+
+
+        self.midi_in = rtmidi.MidiIn()
+
+        port = None
+        while not isinstance(port, int):
+            self.midi_info()
+            port = input()
+            try:
+                port = int(port)
+            except ValueError:
+                print("Port need to be a number!\n")
+
+        self.controller = Controller(synth=self.synth,sample_rate=self.render_rate)
+        self.controller.change_midi_port(port, self.midi_in.get_port_count())
+        self.controller.toggle()
+
+        self.count = 0
 
         self.retranslateUi(MainWindow)
 
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
+
+    def lfo_1_rate_dial_moved(self):
+        self.controller.lfo_rate = 0.19*self.lfo_1_rate_dial.value() + 1
+        # self.controller.process.join()
+        # self.count+=1
+        # print(str(self.count)+' '+str(self.lfo_1_rate_dial.value()))
+        # self.modulated_oscillator.lfo_rate = 0.19*self.lfo_1_rate_dial.value() + 1
+        # print(self.modulated_oscillator.lfo_rate)
+        # self.controller.process.start()
+        # self.count+=1
+
+    def midi_info(self):
+        print("Available MIDI ports:\n")
+        available_ports = self.midi_in.get_ports()
+        for i in range(len(available_ports)):
+            print("[", i, "]", available_ports[i])
+        print("\nPlease select port of a MIDI device:")
+
+    def run_synth_no_gui(self,synth):
+        port = None
+        while not isinstance(port, int):
+            self.midi_info()
+            port = input()
+            try:
+                port = int(port)
+            except ValueError:
+                print("Port need to be a number!\n")
+
+        controller = Controller(synth=synth,sample_rate=self.render_rate)
+        controller.change_midi_port(port, self.midi_in.get_port_count())
+        controller.toggle()
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
