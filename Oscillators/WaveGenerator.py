@@ -15,7 +15,7 @@ class WaveGenerator:
 
 
     def get_int_waves(self):
-        int_waves = []
+        int_waves = np.empty((4,self.render_rate))
 
         sine_wave_int = np.zeros(self.render_rate)
         square_wave_int = np.zeros(self.render_rate)
@@ -28,19 +28,19 @@ class WaveGenerator:
             sawtooth_wave_int[i] = self.get_int_wave(self.sawtooth_wave,i,self.render_rate)#np.trapz(self.sawtooth_wave[:i])/self.render_rate
             triangle_wave_int[i] = self.get_int_wave(self.triangle_wave,i,self.render_rate)#np.trapz(self.triangle_wave[:i])/self.render_rate
 
-        int_waves.append(np.array(sine_wave_int))
-        int_waves.append(np.array(square_wave_int))
-        int_waves.append(np.array(sawtooth_wave_int))
-        int_waves.append(np.array(triangle_wave_int))
+        int_waves[0]=sine_wave_int
+        int_waves[1]=square_wave_int
+        int_waves[2]=sawtooth_wave_int
+        int_waves[3]=triangle_wave_int
 
         return int_waves
 
     def get_waves(self):
-        waves = []
-        waves.append(self.sine_wave)
-        waves.append(self.square_wave)
-        waves.append(self.sawtooth_wave)
-        waves.append(self.triangle_wave)
+        waves = np.empty((4,self.render_rate))
+        waves[0]=self.sine_wave
+        waves[1]=self.square_wave
+        waves[2]=self.sawtooth_wave
+        waves[3]=self.triangle_wave
         return waves
 
     @staticmethod

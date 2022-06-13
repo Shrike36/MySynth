@@ -36,6 +36,8 @@ class Synth:
 
         self.wave_gen = self.oscillators[0].wave_generator
 
+        self.lfo_rate = 2
+
     def get_next_sample(self,amplitude,frequency,time,pressed=True,time_up=sys.maxsize/2):
         osc_values = []
         for oscillator in self.oscillators:
@@ -61,27 +63,27 @@ class Synth:
         waves = self.wave_gen.waves
         integrals = self.wave_gen.int_waves
 
-        detune_index = 1/4
+        detune_index = 0
         detune_is_working = True
 
         oscillator_1_type = Type.sine.value
         oscillator_1_is_working = True
         modulation_1_is_working = True
         modulation_1_type = ModulationType.fm.value
-        modulation_1_index = 4
+        modulation_1_index = 5
         lfo_1_type = Type.sine.value
-        lfo_1_frequency = 6
+        lfo_1_frequency = self.lfo_rate
 
         oscillator_2_type = Type.sawtooth.value
         oscillator_2_is_working = True
         modulation_2_is_working = True
-        modulation_2_type = ModulationType.fm.value
-        modulation_2_index = 3
+        modulation_2_type = ModulationType.am.value
+        modulation_2_index = 1
         lfo_2_type = Type.sine.value
-        lfo_2_frequency = 6
+        lfo_2_frequency = self.lfo_rate
 
         oscillator_1_adder_index = 1
-        oscillator_2_adder_index = 0.6
+        oscillator_2_adder_index = 0.2
 
         return self.decor(amplitude,frequency,time,
                           detune_is_working,detune_index,

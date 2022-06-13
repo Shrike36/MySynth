@@ -585,7 +585,7 @@ class Ui_MainWindow(object):
         self.adsr_2_layout.addWidget(self.adsr_2_view)
         self.adsr_2_view.plot(self.envelope_2_a.values, pen=self.pen_1)
 
-        self.render_rate = 192000
+        self.render_rate = 44100
 
 
 
@@ -644,7 +644,7 @@ class Ui_MainWindow(object):
 
 
     def lfo_1_rate_dial_moved(self):
-        self.controller.lfo_rate = 0.19*self.lfo_1_rate_dial.value() + 1
+        self.synth.lfo_rate = 0.19*self.lfo_1_rate_dial.value() + 1
         # self.controller.process.join()
         # self.count+=1
         # print(str(self.count)+' '+str(self.lfo_1_rate_dial.value()))

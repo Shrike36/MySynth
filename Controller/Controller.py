@@ -1,4 +1,6 @@
 import threading
+from copy import copy
+
 import pyaudio
 from numba import njit
 
@@ -20,7 +22,7 @@ class Controller:
         self.stream = self.settings(1, self.sample_rate, True, self.buffer_size)
         self.stream.start_stream()
 
-        self.fade_seq = 256
+        self.fade_seq = 256#buffer_size/10
         self.smooth_buffer = np.zeros(self.fade_seq)
         self.coefficients = np.linspace(0, 1, self.fade_seq)
         self.coefficientsR = self.coefficients[::-1]
@@ -70,6 +72,42 @@ class Controller:
         for i in range(0,fade_len):
             signal[i] = coef_up[i] * signal[i] + coef_down[i] * buffer[i]
         return signal
+
+
+    'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
+    def render_with_numba_poly(self):
+
+        start = 0
+        end = self.buffer_size
+
+        while self.running:
+
+            freqs = copy(self.midi_interface.currentFreq)
+
+            if len(freqs) > 0:
+                time = np.arange(start,end+self.fade_seq)
+                samples = np.zeros((len(freqs),self.fade_seq+self.buffer_size))
+                i = 0
+                for freq in freqs:
+                    samples[i] = self.synth.get_next_sample_with_numba(amplitude=0.1,
+                                                                   frequency=freq,
+                                                                   time=time,
+                                                                   render_rate=self.sample_rate,
+                                                                   pressed=True)
+                    i+=1
+
+                sample = sum(samples)
+            else:
+                sample = np.zeros(self.fade_seq+self.buffer_size)
+
+            # print(max(sample))
+            # sample = self.smooth(sample,self.smooth_buffer,self.coefficients,self.coefficientsR,self.fade_seq)
+            self.stream.write(sample[:self.buffer_size].astype(np.float32).tostring())
+
+            start = end
+            end += self.buffer_size
+
+            self.smooth_buffer = sample[-self.fade_seq:]
 
 
     'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
