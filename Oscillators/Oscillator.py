@@ -15,7 +15,7 @@ class Oscillator:
 
     def __init__(self, type : Type, wave_generator, render_rate):
         self._type = type.value
-        self._is_working = True
+        self.is_working = True
         self.wave_generator = wave_generator
         self._render_rate = render_rate
 

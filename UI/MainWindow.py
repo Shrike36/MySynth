@@ -7,6 +7,7 @@
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
+import time
 
 from PyQt5.QtCore import (QCoreApplication, QMetaObject, QObject, QPoint,
                             QRect, QSize, QUrl, Qt)
@@ -584,17 +585,21 @@ class Ui_MainWindow(object):
         self.adsr_2_layout.addWidget(self.adsr_2_view)
         self.adsr_2_view.plot(self.envelope_2_a.values, pen=self.pen_1)
 
-        self.render_rate = 22000
+        self.render_rate = 192000
 
+
+
+        t1 = time.time()
         self.wave_generator = WaveGenerator(self.render_rate)
+        print(" Total time taken is :", time.time() - t1)
 
         self.lfo_1 = LFO(Oscillator(Type.sine,self.wave_generator,self.render_rate))
 
-        self.envelope_1 = Envelope(0.5,0.4,3.8,0.9,0.8,self.render_rate)
+        self.envelope_1 = Envelope(0.1,0.2,3.8,0.9,0.9,self.render_rate)
 
         self.modulation_1 = LFOModulation(ModulationType.fm)
 
-        self.detune_1 = Detune(1/16)
+        self.detune_1 = Detune(0)
         self.detune_2 = ModulatedDetune(1/4,self.lfo_1,2)
 
         self.wave_adder_1 = WaveAdder(1,1,0.5)
@@ -604,10 +609,10 @@ class Ui_MainWindow(object):
 
         self.base_oscillator_1 = Oscillator(Type.sawtooth,self.wave_generator,self.render_rate)
         self.base_oscillator_2 = Oscillator(Type.sine,self.wave_generator,self.render_rate)
-        self.modulated_oscillator = ModulatedOscillator(Type.triangle,self.wave_generator,self.lfo_1,3,self.envelope_1,
+        self.modulated_oscillator = ModulatedOscillator(Type.sine,self.wave_generator,self.lfo_1,3,self.envelope_1,
                                                         self.modulation_1,1,self.render_rate)
 
-        self.synth = Synth(self.modulated_oscillator,self.modulated_oscillator,
+        self.synth = Synth(self.base_oscillator_2,self.base_oscillator_2,
                            detune=self.detune_1,
                            wave_adder=self.wave_adder_1,
                            stereo_panner=self.panner_1,

@@ -144,17 +144,20 @@ ch1 = []
 ch2 = []
 
 t1 = time.time()
-for t in range(0,int(1*render_rate)):
-    aa,sm = synth.get_next_sample(10,10,t)
-    # arr1.append(aa[0])
-    arr1.append(base_oscillator_2.get_next_sample(10,1,t))
-    arr2.append(base_oscillator_2.get_next_sample(10,2,t))
 
-    # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
-    # arr2.append(lfo_1.get_next_integral(3,t))
-    sum.append(sm)
-    # ch1.append(ster[0])
-    # ch2.append(ster[1])
+samples = synth.get_next_sample_with_numba(5,10,np.arange(0,10*render_rate),render_rate,True)
+
+# for t in range(0,int(1*render_rate)):
+#     aa,sm = synth.get_next_sample(10,10,t)
+#     # arr1.append(aa[0])
+#     arr1.append(base_oscillator_2.get_next_sample(10,1,t))
+#     arr2.append(base_oscillator_2.get_next_sample(10,2,t))
+#
+#     # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
+#     # arr2.append(lfo_1.get_next_integral(3,t))
+#     sum.append(sm)
+#     # ch1.append(ster[0])
+#     # ch2.append(ster[1])
 
 # for t in range(0,int(10*render_rate)):
 #     arr1.append(base_oscillator_3.get_next_sample(10,5,t))
@@ -231,16 +234,16 @@ for t in range(0,int(1*render_rate)):
 print(" Total time taken is :", time.time() - t1)
 
 
-plt.subplot(2,1,1)
+plt.subplot(1,1,1)
 # plt.title('FM')
-plt.plot(arr1, 'g')
+plt.plot(samples, 'g')
 plt.ylabel('Amplitude')
 # plt.xlabel('Osc')
-
-plt.subplot(2,1,2)
-plt.plot(arr2, 'r')
-plt.ylabel('Amplitude')
-# plt.xlabel('Modulated Osc')
+#
+# plt.subplot(2,1,2)
+# plt.plot(arr2, 'r')
+# plt.ylabel('Amplitude')
+# # plt.xlabel('Modulated Osc')
 
 # plt.subplot(3,1,3)
 # plt.plot(sum, color="purple")

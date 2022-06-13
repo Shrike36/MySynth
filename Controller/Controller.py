@@ -20,7 +20,7 @@ class Controller:
         self.stream = self.settings(1, self.sample_rate, True, self.buffer_size)
         self.stream.start_stream()
 
-        self.fade_seq = 64
+        self.fade_seq = 256
         self.smooth_buffer = np.zeros(self.fade_seq)
         self.coefficients = np.linspace(0, 1, self.fade_seq)
         self.coefficientsR = self.coefficients[::-1]
@@ -32,7 +32,8 @@ class Controller:
         self.running = False
         self.pressed = False
 
-        self.process = threading.Thread(target=self.render,daemon=True)
+        # self.process = threading.Thread(target=self.render,daemon=True)
+        self.process = threading.Thread(target=self.render_with_numba,daemon=True)
 
     def settings(self, channels, rate, output, buffer_size):
         return self.p.open(format=pyaudio.paFloat32,
@@ -72,6 +73,49 @@ class Controller:
 
 
     'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
+    def render_with_numba(self):
+
+        start = 0
+        end = self.buffer_size
+        prev_state = False
+        time_up = 0
+
+        while self.running:
+            pressed = self.midi_interface.pressed
+            currentFreq = self.midi_interface.currentFreq
+
+            if pressed != prev_state:
+                if pressed:
+                    start = 0
+                    end = self.buffer_size
+                else:
+                    time_up = start
+
+            time = np.arange(start,end)
+            sample = self.synth.get_next_sample_with_numba(amplitude=0.1,
+                                                           frequency=currentFreq,
+                                                           time=time,
+                                                           render_rate=self.sample_rate,
+                                                           pressed=pressed,time_up=time_up)
+
+            time = np.arange(end,end+self.fade_seq)
+            buffer = self.synth.get_next_sample_with_numba(amplitude=0.1,
+                                                           frequency=currentFreq,
+                                                           time=time,
+                                                           render_rate=self.sample_rate,
+                                                           pressed=pressed,time_up=time_up)
+
+            sample = self.smooth(sample,self.smooth_buffer,self.coefficients,self.coefficientsR,self.fade_seq)
+
+            self.stream.write(sample.astype(np.float32).tostring())
+
+            start = end
+            end += self.buffer_size
+            prev_state = pressed
+
+            self.smooth_buffer = buffer
+
+    'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
     def render(self):
 
         start = 0
@@ -97,7 +141,7 @@ class Controller:
             i = 0
             time = start
             while time < end:
-                sample[i] = self.synth.get_next_sample(amplitude=0.6,
+                sample[i] = self.synth.get_next_sample(amplitude=0.1,
                                                          frequency=currentFreq,
                                                          time=time,
                                                          pressed=pressed,time_up=time_up)
@@ -107,7 +151,7 @@ class Controller:
             i = 0
             time = end
             while i < self.fade_seq:
-                buffer[i] = self.synth.get_next_sample(amplitude=0.6,
+                buffer[i] = self.synth.get_next_sample(amplitude=0.1,
                                                        frequency=currentFreq,
                                                        time=time,
                                                        pressed=pressed,time_up=time_up)
