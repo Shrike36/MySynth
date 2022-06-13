@@ -10,6 +10,7 @@ class MidiInterface(object):
         self.midi_in.open_port(port)
         self.port_name = self.midi_in.get_port_name(port)
         self.currentFreq = 0
+        self.velocity = 0
         self.pressed = False
         # self.data = data
         self.lastNote = 0
@@ -26,10 +27,13 @@ class MidiInterface(object):
 
     def __call__(self, event, data=None):
         message = event
+        print(message)
         note = message[0][1]
+        note_vel = message[0][2]
         note_state = message[0][0]
         if note_state == 144:
             self.currentFreq = self.notes_as_freq[note]
+            self.velocity = note_vel
             self.pressed = True
             # self.data.kb_state.state = True
             self.lastNote = note

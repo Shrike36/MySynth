@@ -122,6 +122,10 @@ class Controller:
             pressed = self.midi_interface.pressed
             currentFreq = self.midi_interface.currentFreq
 
+            max_a = 0.85
+            min_a = 0.01
+            amplitude = (max_a-min_a)/126 * (self.midi_interface.velocity - 1) + min_a
+
             if pressed != prev_state:
                 if pressed:
                     start = 0
@@ -130,14 +134,14 @@ class Controller:
                     time_up = start
 
             time = np.arange(start,end)
-            sample = self.synth.get_next_sample_with_numba(amplitude=0.1,
+            sample = self.synth.get_next_sample_with_numba(amplitude=amplitude,
                                                            frequency=currentFreq,
                                                            time=time,
                                                            render_rate=self.sample_rate,
                                                            pressed=pressed,time_up=time_up)
 
             time = np.arange(end,end+self.fade_seq)
-            buffer = self.synth.get_next_sample_with_numba(amplitude=0.1,
+            buffer = self.synth.get_next_sample_with_numba(amplitude=amplitude,
                                                            frequency=currentFreq,
                                                            time=time,
                                                            render_rate=self.sample_rate,
