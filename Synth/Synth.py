@@ -14,6 +14,7 @@ from Modulators.Envelope import Envelope
 from Modulators.LFO import LFO
 from Oscillators.Oscillator import Oscillator, Type
 from Oscillators.WaveGenerator import WaveGenerator
+from Synth.Parameters import SynthParams
 
 
 class Synth:
@@ -21,6 +22,7 @@ class Synth:
                  detune : Detune,
                  wave_adder : WaveAdder,
                  stereo_panner : StereoPanner,
+                 params : SynthParams,
                  render_rate : int, stereo : bool):
         self.render_rate = render_rate
         self.stereo = stereo
@@ -36,7 +38,7 @@ class Synth:
 
         self.wave_gen = self.oscillators[0].wave_generator
 
-        self.lfo_rate = 2
+        self.params = params
 
     def get_next_sample(self,amplitude,frequency,time,pressed=True,time_up=sys.maxsize/2):
         osc_values = []
@@ -60,47 +62,30 @@ class Synth:
 
     def get_next_sample_with_numba(self,amplitude,frequency,time,render_rate,pressed=True,time_up=sys.maxsize/2):
 
-        waves = self.wave_gen.waves
-        integrals = self.wave_gen.int_waves
-
-        detune_index = 0
-        detune_is_working = True
-
-        oscillator_1_type = Type.sine.value
-        oscillator_1_is_working = True
-        modulation_1_is_working = True
-        modulation_1_type = ModulationType.fm.value
-        modulation_1_index = 5
-        lfo_1_type = Type.sine.value
-        lfo_1_frequency = self.lfo_rate
-
-        oscillator_2_type = Type.sawtooth.value
-        oscillator_2_is_working = True
-        modulation_2_is_working = True
-        modulation_2_type = ModulationType.am.value
-        modulation_2_index = 1
-        lfo_2_type = Type.sine.value
-        lfo_2_frequency = self.lfo_rate
-
-        oscillator_1_adder_index = 1
-        oscillator_2_adder_index = 0.2
-
-        return self.decor(amplitude,frequency,time,
-                          detune_is_working,detune_index,
-                          oscillator_1_type,oscillator_1_is_working,modulation_1_is_working,modulation_1_type,modulation_1_index,lfo_1_type,lfo_1_frequency,
-                          oscillator_2_type,oscillator_2_is_working,modulation_2_is_working,modulation_2_type,modulation_2_index,lfo_2_type,lfo_2_frequency,
-                          oscillator_1_adder_index,oscillator_2_adder_index,
+        return self.decor(amplitude, frequency, time,
+                          self.params.osc_1_type, self.params.osc_1_is_working,
+                          self.params.mod_1_is_working, self.params.mod_1_type, self.params.mod_1_index,
+                          self.params.lfo_1_type, self.params.lfo_1_frequency,
+                          self.params.osc_2_type, self.params.osc_2_is_working,
+                          self.params.mod_2_is_working, self.params.mod_2_type, self.params.mod_2_index,
+                          self.params.lfo_2_type, self.params.lfo_2_frequency,
+                          self.params.osc_1_adder_index, self.params.osc_2_adder_index,
+                          self.params.detune_is_working, self.params.detune_index,
+                          self.params.panner_is_working, self.params.panner_index,
+                          self.params.panner_modulation_is_working,self.params.lfo_panner_type,self.params.lfo_panner_frequency,
                           render_rate,
-                          pressed,time_up,
-                          waves,integrals)
+                          pressed, time_up,
+                          self.wave_gen.waves, self.wave_gen.int_waves)
 
     @staticmethod
     @njit(cache=True)
     def decor(amplitude,frequency,time,
-              detune_is_working,detune_index,
               oscillator_1_type,oscillator_1_is_working,modulation_1_is_working,modulation_1_type,modulation_1_index,lfo_1_type,lfo_1_frequency,
               oscillator_2_type,oscillator_2_is_working,modulation_2_is_working,modulation_2_type,modulation_2_index,lfo_2_type,lfo_2_frequency,
               oscillator_1_adder_index,oscillator_2_adder_index,
+              detune_is_working,detune_index,
+              panner_is_working,panner_index,
+              panner_modulation_is_working,lfo_panner_type,lfo_panner_frequency,
               render_rate,
               pressed=True,time_up=sys.maxsize/2,
               waves=np.array([]),integrals=np.array([])):
@@ -196,4 +181,25 @@ class Synth:
 
                 i = i + 1
 
-        return sample
+        stereo_sample = np.empty((2,len(time)))
+        if not panner_is_working:
+            stereo_sample[0] = 1*sample
+            stereo_sample[1] = 1*sample
+        else:
+            if not panner_modulation_is_working:
+                stereo_sample[0] = (1-panner_index)*sample
+                stereo_sample[1] = panner_index*sample
+            else:
+                lfo_panner_wave = waves[lfo_panner_type]
+                i = 0
+                t = 0
+                while i < len(time):
+                    t = time[i]
+                    lfo_panner_t = (int)((lfo_panner_frequency*t) % render_rate)
+                    lfo_panner_val = lfo_panner_wave[lfo_panner_t]
+                    amp = lfo_panner_val * (panner_index-0.5) + 0.5
+                    stereo_sample[0][i] = (1 - amp) * sample[i]
+                    stereo_sample[1][i] = amp * sample[i]
+                    i = i + 1
+
+        return stereo_sample

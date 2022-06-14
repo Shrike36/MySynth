@@ -3,6 +3,10 @@ import time
 
 from numba import njit
 
+arr1 = np.zeros(5)
+arr2 = np.ones(5)
+sum = np.array([arr1,arr2])
+
 @njit(cache=True)
 def get_arr(num):
     arr_1 = np.empty(num)

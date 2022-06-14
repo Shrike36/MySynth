@@ -27,7 +27,7 @@ class MidiInterface(object):
 
     def __call__(self, event, data=None):
         message = event
-        print(message)
+        # print(message)
         note = message[0][1]
         note_vel = message[0][2]
         note_state = message[0][0]
@@ -39,6 +39,7 @@ class MidiInterface(object):
             self.lastNote = note
         elif note_state == 128 and note == self.lastNote:
             self.pressed = False
+
         # print(message, self.data.kb_state.state, self.lastNote, note, self.currentFreq)
 #
 #

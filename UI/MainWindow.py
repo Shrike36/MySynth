@@ -30,6 +30,7 @@ from Modulators.LFO import LFO
 from Oscillators.ModulatedOscillator import ModulatedOscillator
 from Oscillators.Oscillator import Oscillator, Type
 from Oscillators.WaveGenerator import WaveGenerator
+from Synth.Parameters import SynthParams
 from Synth.Synth import Synth
 
 
@@ -260,6 +261,7 @@ class Ui_MainWindow(object):
         self.lfo_2_rate_dial.setObjectName(u"lfo_2_rate_dial")
         self.lfo_2_rate_dial.setGeometry(QRect(310, 840, 50, 64))
         self.lfo_2_rate_dial.setNotchesVisible(True)
+        self.lfo_2_rate_dial.valueChanged.connect(self.lfo_2_rate_dial_moved)
         self.osc_2_sawtooth_radioButton = QRadioButton(self.centralwidget)
         self.osc_2_sawtooth_radioButton.setObjectName(u"osc_2_sawtooth_radioButton")
         self.osc_2_sawtooth_radioButton.setGeometry(QRect(130, 700, 121, 21))
@@ -612,13 +614,15 @@ class Ui_MainWindow(object):
         self.modulated_oscillator = ModulatedOscillator(Type.sine,self.wave_generator,self.lfo_1,3,self.envelope_1,
                                                         self.modulation_1,1,self.render_rate)
 
+        self.params = SynthParams()
+
         self.synth = Synth(self.base_oscillator_2,self.base_oscillator_2,
                            detune=self.detune_1,
                            wave_adder=self.wave_adder_1,
                            stereo_panner=self.panner_1,
+                           params=self.params,
                            render_rate=self.render_rate,
                            stereo=False)
-
 
         self.midi_in = rtmidi.MidiIn()
 
@@ -642,16 +646,11 @@ class Ui_MainWindow(object):
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
-
     def lfo_1_rate_dial_moved(self):
-        self.synth.lfo_rate = 0.19*self.lfo_1_rate_dial.value() + 1
-        # self.controller.process.join()
-        # self.count+=1
-        # print(str(self.count)+' '+str(self.lfo_1_rate_dial.value()))
-        # self.modulated_oscillator.lfo_rate = 0.19*self.lfo_1_rate_dial.value() + 1
-        # print(self.modulated_oscillator.lfo_rate)
-        # self.controller.process.start()
-        # self.count+=1
+        self.synth.params.lfo_1_frequency = 0.19*self.lfo_1_rate_dial.value() + 1
+
+    def lfo_2_rate_dial_moved(self):
+        self.synth.params.lfo_2_frequency = 0.19*self.lfo_2_rate_dial.value() + 1
 
     def midi_info(self):
         print("Available MIDI ports:\n")

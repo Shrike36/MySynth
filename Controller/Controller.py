@@ -23,7 +23,7 @@ class Controller:
         self.stream.start_stream()
 
         self.fade_seq = 256#buffer_size/10
-        self.smooth_buffer = np.zeros(self.fade_seq)
+        self.smooth_buffer = np.zeros((2,self.fade_seq))
         self.coefficients = np.linspace(0, 1, self.fade_seq)
         self.coefficientsR = self.coefficients[::-1]
 
@@ -39,7 +39,7 @@ class Controller:
 
     def settings(self, channels, rate, output, buffer_size):
         return self.p.open(format=pyaudio.paFloat32,
-                           channels=channels,
+                           channels=2,
                            rate=rate,
                            output=output,
                            frames_per_buffer=buffer_size)
@@ -69,9 +69,10 @@ class Controller:
     @staticmethod
     @njit(cache=True)
     def smooth(signal,buffer,coef_up,coef_down,fade_len):
-        for i in range(0,fade_len):
-            signal[i] = coef_up[i] * signal[i] + coef_down[i] * buffer[i]
-        return signal
+        for ch in range(0,2):
+            for i in range(0,fade_len):
+                signal[ch][i] = coef_up[i] * signal[ch][i] + coef_down[i] * buffer[ch][i]
+        return signal.transpose().astype(np.float32)
 
 
     'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
@@ -149,7 +150,7 @@ class Controller:
 
             sample = self.smooth(sample,self.smooth_buffer,self.coefficients,self.coefficientsR,self.fade_seq)
 
-            self.stream.write(sample.astype(np.float32).tostring())
+            self.stream.write(sample.tobytes())
 
             start = end
             end += self.buffer_size
@@ -157,69 +158,69 @@ class Controller:
 
             self.smooth_buffer = buffer
 
-    'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
-    def render(self):
-
-        start = 0
-        end = self.buffer_size
-        prev_state = False
-        time_up = 0
-
-        while self.running:
-
-            sample = np.empty(self.buffer_size)
-            buffer = np.empty(self.buffer_size)
-
-            pressed = self.midi_interface.pressed
-            currentFreq = self.midi_interface.currentFreq
-
-            if pressed != prev_state:
-                if pressed:
-                    start = 0
-                    end = self.buffer_size
-                else:
-                    time_up = start
-
-            i = 0
-            time = start
-            while time < end:
-                sample[i] = self.synth.get_next_sample(amplitude=0.1,
-                                                         frequency=currentFreq,
-                                                         time=time,
-                                                         pressed=pressed,time_up=time_up)
-                i += 1
-                time += 1
-
-            i = 0
-            time = end
-            while i < self.fade_seq:
-                buffer[i] = self.synth.get_next_sample(amplitude=0.1,
-                                                       frequency=currentFreq,
-                                                       time=time,
-                                                       pressed=pressed,time_up=time_up)
-                i += 1
-                time += 1
-
-            sample = self.smooth(sample,self.smooth_buffer,self.coefficients,self.coefficientsR,self.fade_seq)
-
-            self.stream.write(sample.astype(np.float32).tostring())
-
-            start = end
-            end += self.buffer_size
-            prev_state = pressed
-
-            self.smooth_buffer = buffer
-
-            # if pressed:
-            #     currentFreq = self.midi_interface.currentFreq
-            #     for t in range(start, end):
-            #         sample.append(self.synth.get_next_sample(0.6,currentFreq,t))
-            #     start = end
-            #     end += self.buffer_size
-            # else:
-            #     for t in range(0, self.buffer_size):
-            #         sample.append(0)
-            #     start = 0
-            #     end = self.buffer_size
-
-            # self.stream.write(np.array(sample, dtype=np.float32).tostring())
+    # 'Если и прошлый был нажат и этот нажат, но разные ноты, то время не скидывается, а должно'
+    # def render(self):
+    #
+    #     start = 0
+    #     end = self.buffer_size
+    #     prev_state = False
+    #     time_up = 0
+    #
+    #     while self.running:
+    #
+    #         sample = np.empty(self.buffer_size)
+    #         buffer = np.empty(self.buffer_size)
+    #
+    #         pressed = self.midi_interface.pressed
+    #         currentFreq = self.midi_interface.currentFreq
+    #
+    #         if pressed != prev_state:
+    #             if pressed:
+    #                 start = 0
+    #                 end = self.buffer_size
+    #             else:
+    #                 time_up = start
+    #
+    #         i = 0
+    #         time = start
+    #         while time < end:
+    #             sample[i] = self.synth.get_next_sample(amplitude=0.1,
+    #                                                      frequency=currentFreq,
+    #                                                      time=time,
+    #                                                      pressed=pressed,time_up=time_up)
+    #             i += 1
+    #             time += 1
+    #
+    #         i = 0
+    #         time = end
+    #         while i < self.fade_seq:
+    #             buffer[i] = self.synth.get_next_sample(amplitude=0.1,
+    #                                                    frequency=currentFreq,
+    #                                                    time=time,
+    #                                                    pressed=pressed,time_up=time_up)
+    #             i += 1
+    #             time += 1
+    #
+    #         sample = self.smooth(sample,self.smooth_buffer,self.coefficients,self.coefficientsR,self.fade_seq)
+    #
+    #         self.stream.write(sample.astype(np.float32).tostring())
+    #
+    #         start = end
+    #         end += self.buffer_size
+    #         prev_state = pressed
+    #
+    #         self.smooth_buffer = buffer
+    #
+    #         # if pressed:
+    #         #     currentFreq = self.midi_interface.currentFreq
+    #         #     for t in range(start, end):
+    #         #         sample.append(self.synth.get_next_sample(0.6,currentFreq,t))
+    #         #     start = end
+    #         #     end += self.buffer_size
+    #         # else:
+    #         #     for t in range(0, self.buffer_size):
+    #         #         sample.append(0)
+    #         #     start = 0
+    #         #     end = self.buffer_size
+    #
+    #         # self.stream.write(np.array(sample, dtype=np.float32).tostring())
