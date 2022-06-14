@@ -1,3 +1,5 @@
+import numpy as np
+
 from Modulation.ParamsModulation import ModulationType
 from Oscillators.Oscillator import Type
 
@@ -23,6 +25,11 @@ class SynthParams:
         self.mod_2_index = 1
         self.lfo_2_type = Type.sine.value
         self.lfo_2_frequency = 1
+
+        self.adsr_1 = np.array([0.1, 0.1, 3, 1.5, 0.8])
+        self.adsr_1_is_working = True
+        self.adsr_2 = np.array([0.1, 0.1, 3, 1.5, 0.8])
+        self.adsr_2_is_working = True
 
         self.osc_1_adder_index = 1
         self.osc_2_adder_index = 1
