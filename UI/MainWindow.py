@@ -34,7 +34,7 @@ from Synth.Parameters import SynthParams
 from Synth.Synth import Synth
 
 
-class Ui_MainWindow(object):
+class Ui_MainWindow(QWidget):
 
     def setupUi(self, MainWindow):
         if MainWindow.objectName():
@@ -58,11 +58,11 @@ class Ui_MainWindow(object):
         self.osc_1_layout = QVBoxLayout(self.verticalLayoutWidget)
         self.osc_1_layout.setObjectName(u"osc_1_layout")
         self.osc_1_layout.setContentsMargins(0, 0, 0, 0)
-        self.osc_1_sine_radioButton = QRadioButton(self.centralwidget)
-        self.osc_1_sine_radioButton.setObjectName(u"osc_1_sine_radioButton")
-        self.osc_1_sine_radioButton.setGeometry(QRect(10, 240, 80, 21))
         font1 = QFont()
         font1.setPointSize(12)
+        self.osc_1_sine_radioButton = QRadioButton(self.centralwidget)
+        self.osc_1_sine_radioButton.setObjectName(u"1")
+        self.osc_1_sine_radioButton.setGeometry(QRect(10, 240, 80, 21))
         self.osc_1_sine_radioButton.setFont(font1)
         self.osc_1_sine_radioButton.setChecked(True)
         self.osc_1_sine_radioButton.setAutoExclusive(False)
@@ -86,6 +86,7 @@ class Ui_MainWindow(object):
         self.osc_1_off_radioButton.setGeometry(QRect(10, 60, 80, 21))
         self.osc_1_off_radioButton.setFont(font1)
         self.osc_1_off_radioButton.setAutoExclusive(False)
+        self.osc_1_off_radioButton.toggled.connect(self.osc_1_off_radioButton_clicked)
         self.label_2 = QLabel(self.centralwidget)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setGeometry(QRect(320, 20, 111, 16))
@@ -101,6 +102,7 @@ class Ui_MainWindow(object):
         self.lfo_1_off_radioButton.setGeometry(QRect(320, 60, 80, 21))
         self.lfo_1_off_radioButton.setFont(font1)
         self.lfo_1_off_radioButton.setAutoExclusive(False)
+        self.lfo_1_off_radioButton.toggled.connect(self.lfo_1_off_radioButton_clicked)
         self.lfo_1_AM_radioButton = QRadioButton(self.centralwidget)
         self.lfo_1_AM_radioButton.setObjectName(u"lfo_1_AM_radioButton")
         self.lfo_1_AM_radioButton.setGeometry(QRect(320, 320, 80, 21))
@@ -149,6 +151,7 @@ class Ui_MainWindow(object):
         self.lfo_1_amount_dial.setObjectName(u"lfo_1_amount_dial")
         self.lfo_1_amount_dial.setGeometry(QRect(390, 380, 50, 64))
         self.lfo_1_amount_dial.setNotchesVisible(True)
+        self.lfo_1_amount_dial.valueChanged.connect(self.lfo_1_amount_dial_moved)
         self.adsr_1_att_slider = QSlider(self.centralwidget)
         self.adsr_1_att_slider.setObjectName(u"adsr_1_att_slider")
         self.adsr_1_att_slider.setGeometry(QRect(700, 240, 160, 16))
@@ -192,6 +195,7 @@ class Ui_MainWindow(object):
         self.lfo_2_off_radioButton.setGeometry(QRect(320, 520, 80, 21))
         self.lfo_2_off_radioButton.setFont(font1)
         self.lfo_2_off_radioButton.setAutoExclusive(False)
+        self.lfo_2_off_radioButton.toggled.connect(self.lfo_2_off_radioButton_clicked)
         self.adsr_2_off_radioButton = QRadioButton(self.centralwidget)
         self.adsr_2_off_radioButton.setObjectName(u"adsr_2_off_radioButton")
         self.adsr_2_off_radioButton.setGeometry(QRect(630, 520, 80, 21))
@@ -213,6 +217,7 @@ class Ui_MainWindow(object):
         self.lfo_2_amount_dial.setObjectName(u"lfo_2_amount_dial")
         self.lfo_2_amount_dial.setGeometry(QRect(390, 840, 50, 64))
         self.lfo_2_amount_dial.setNotchesVisible(True)
+        self.lfo_2_amount_dial.valueChanged.connect(self.lfo_2_amount_dial_moved)
         self.label_13 = QLabel(self.centralwidget)
         self.label_13.setObjectName(u"label_13")
         self.label_13.setGeometry(QRect(320, 830, 47, 14))
@@ -257,6 +262,7 @@ class Ui_MainWindow(object):
         self.osc_2_off_radioButton.setGeometry(QRect(10, 520, 80, 21))
         self.osc_2_off_radioButton.setFont(font1)
         self.osc_2_off_radioButton.setAutoExclusive(False)
+        self.osc_2_off_radioButton.toggled.connect(self.osc_2_off_radioButton_clicked)
         self.lfo_2_rate_dial = QDial(self.centralwidget)
         self.lfo_2_rate_dial.setObjectName(u"lfo_2_rate_dial")
         self.lfo_2_rate_dial.setGeometry(QRect(310, 840, 50, 64))
@@ -431,6 +437,7 @@ class Ui_MainWindow(object):
         self.panner_modulated_radioButton.setGeometry(QRect(1250, 240, 111, 21))
         self.panner_modulated_radioButton.setFont(font1)
         self.panner_modulated_radioButton.setAutoExclusive(False)
+        self.panner_modulated_radioButton.toggled.connect(self.panner_modulated_radioButton_clicked)
         self.label_25 = QLabel(self.centralwidget)
         self.label_25.setObjectName(u"label_25")
         self.label_25.setGeometry(QRect(1250, 370, 47, 14))
@@ -445,11 +452,13 @@ class Ui_MainWindow(object):
         self.panner_off_radioButton.setGeometry(QRect(1250, 60, 80, 21))
         self.panner_off_radioButton.setFont(font1)
         self.panner_off_radioButton.setAutoExclusive(False)
+        self.panner_off_radioButton.toggled.connect(self.panner_off_radioButton_clicked)
         self.panner_rate_dial = QDial(self.centralwidget)
         self.panner_rate_dial.setObjectName(u"panner_rate_dial")
         self.panner_rate_dial.setGeometry(QRect(1240, 380, 50, 64))
         self.panner_rate_dial.setNotchTarget(3.700000000000000)
         self.panner_rate_dial.setNotchesVisible(True)
+        self.panner_rate_dial.valueChanged.connect(self.panner_rate_dial_moved)
         self.panner_lfo_triangle_radioButton = QRadioButton(self.centralwidget)
         self.panner_lfo_triangle_radioButton.setObjectName(u"panner_lfo_triangle_radioButton")
         self.panner_lfo_triangle_radioButton.setGeometry(QRect(1370, 320, 101, 21))
@@ -649,8 +658,35 @@ class Ui_MainWindow(object):
     def lfo_1_rate_dial_moved(self):
         self.synth.params.lfo_1_frequency = 0.19*self.lfo_1_rate_dial.value() + 1
 
+    def lfo_1_amount_dial_moved(self):
+        self.synth.params.mod_1_index = 1/11*self.lfo_1_amount_dial.value() + 1
+
     def lfo_2_rate_dial_moved(self):
         self.synth.params.lfo_2_frequency = 0.19*self.lfo_2_rate_dial.value() + 1
+
+    def lfo_2_amount_dial_moved(self):
+        self.synth.params.mod_2_index = 1/11*self.lfo_2_amount_dial.value() + 1
+
+    def panner_rate_dial_moved(self):
+        self.synth.params.lfo_panner_frequency = 0.19*self.panner_rate_dial.value() + 1
+
+    def osc_1_off_radioButton_clicked(self):
+        self.synth.params.osc_1_is_working = not self.sender().isChecked()
+
+    def osc_2_off_radioButton_clicked(self):
+        self.synth.params.osc_2_is_working = not self.sender().isChecked()
+
+    def lfo_1_off_radioButton_clicked(self):
+        self.synth.params.mod_1_is_working = not self.sender().isChecked()
+
+    def lfo_2_off_radioButton_clicked(self):
+        self.synth.params.mod_2_is_working = not self.sender().isChecked()
+
+    def panner_off_radioButton_clicked(self):
+        self.synth.params.panner_is_working = not self.sender().isChecked()
+
+    def panner_modulated_radioButton_clicked(self):
+        self.synth.params.panner_modulation_is_working = not self.sender().isChecked()
 
     def midi_info(self):
         print("Available MIDI ports:\n")

@@ -11,9 +11,9 @@ class SynthParams:
         self.osc_1_type = Type.sine.value
         self.osc_1_is_working = True
         self.mod_1_is_working = True
-        self.mod_1_type = ModulationType.fm.value
+        self.mod_1_type = ModulationType.pm.value
         self.mod_1_index = 5
-        self.lfo_1_type = Type.sine.value
+        self.lfo_1_type = Type.triangle.value
         self.lfo_1_frequency = 3
 
         self.osc_2_type = Type.sawtooth.value
@@ -25,12 +25,12 @@ class SynthParams:
         self.lfo_2_frequency = 3
 
         self.osc_1_adder_index = 1
-        self.osc_2_adder_index = 0.2
+        self.osc_2_adder_index = 0.4
 
         self.panner_index = 0.8
         self.panner_is_working = True
         self.panner_modulation_is_working = True
-        self.lfo_panner_type = Type.square.value
+        self.lfo_panner_type = Type.sine.value
         self.lfo_panner_frequency = 3
 
 
