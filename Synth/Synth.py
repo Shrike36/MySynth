@@ -101,18 +101,12 @@ class Synth:
         oscillator_2_frequency = frequency
 
         if detune_is_working:
-            minus = []
-            plus = []
-            max = int(2/2)+1
-            for i in range(1,max):
-                minus.append(detune_index*(-1/i))
-                plus.append(detune_index*(1/(max-i)))
-            if not (2 % 2 == 0):
-                minus.append(0)
-            detune_values = minus + plus
+            detune_values = []
+            detune_values.append(-detune_index)
+            detune_values.append(detune_index)
 
-            oscillator_1_frequency = detune_values[0] + oscillator_1_frequency
-            oscillator_2_frequency = detune_values[1] + oscillator_2_frequency
+            oscillator_1_frequency = oscillator_1_frequency * (detune_values[0] + 1)
+            oscillator_2_frequency = oscillator_2_frequency * (detune_values[1] + 1)
 
         sample = np.zeros(len(time))
 

@@ -123,7 +123,7 @@ class Controller:
             pressed = self.midi_interface.pressed
             currentFreq = self.midi_interface.currentFreq
 
-            max_a = 0.7
+            max_a = 0.6
             min_a = 0.01
             amplitude = (max_a-min_a)/126 * (self.midi_interface.velocity - 1) + min_a
 

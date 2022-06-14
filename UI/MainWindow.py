@@ -128,6 +128,16 @@ class Ui_MainWindow(QWidget):
         self.lfo_1_PM_radioButton.setGeometry(QRect(500, 320, 51, 21))
         self.lfo_1_PM_radioButton.setFont(font1)
         self.lfo_1_PM_radioButton.setAutoExclusive(False)
+
+        self.mod_1_type_rbtnGroup =  QButtonGroup()
+        self.mod_1_type_rbtnGroup.addButton(self.lfo_1_AM_radioButton)
+        self.mod_1_type_rbtnGroup.addButton(self.lfo_1_FM_radioButton)
+        self.mod_1_type_rbtnGroup.addButton(self.lfo_1_PM_radioButton)
+        self.mod_1_type_rbtnGroup.setExclusive(True)
+        self.lfo_1_AM_radioButton.toggled.connect(self.lfo_1_AM_radioButton_clicked)
+        self.lfo_1_FM_radioButton.toggled.connect(self.lfo_1_FM_radioButton_clicked)
+        self.lfo_1_PM_radioButton.toggled.connect(self.lfo_1_PM_radioButton_clicked)
+
         self.label_3 = QLabel(self.centralwidget)
         self.label_3.setObjectName(u"label_3")
         self.label_3.setGeometry(QRect(630, 20, 111, 16))
@@ -355,11 +365,33 @@ class Ui_MainWindow(QWidget):
         self.lfo_2_triangle_radioButton.setGeometry(QRect(440, 730, 101, 21))
         self.lfo_2_triangle_radioButton.setFont(font1)
         self.lfo_2_triangle_radioButton.setAutoExclusive(False)
+
+        self.lfo_2_type_rbtnGroup =  QButtonGroup()
+        self.lfo_2_type_rbtnGroup.addButton(self.lfo_2_sine_radioButton)
+        self.lfo_2_type_rbtnGroup.addButton(self.lfo_2_square_radioButton)
+        self.lfo_2_type_rbtnGroup.addButton(self.lfo_2_sawtooth_radioButton)
+        self.lfo_2_type_rbtnGroup.addButton(self.lfo_2_triangle_radioButton)
+        self.lfo_2_type_rbtnGroup.setExclusive(True)
+        self.lfo_2_sine_radioButton.toggled.connect(self.lfo_2_sine_radioButton_clicked)
+        self.lfo_2_square_radioButton.toggled.connect(self.lfo_2_square_radioButton_clicked)
+        self.lfo_2_sawtooth_radioButton.toggled.connect(self.lfo_2_sawtooth_radioButton_clicked)
+        self.lfo_2_triangle_radioButton.toggled.connect(self.lfo_2_triangle_radioButton_clicked)
+
         self.lfo_2_AM_radioButton = QRadioButton(self.centralwidget)
         self.lfo_2_AM_radioButton.setObjectName(u"lfo_2_AM_radioButton")
         self.lfo_2_AM_radioButton.setGeometry(QRect(320, 780, 80, 21))
         self.lfo_2_AM_radioButton.setFont(font1)
         self.lfo_2_AM_radioButton.setAutoExclusive(False)
+
+        self.mod_2_type_rbtnGroup =  QButtonGroup()
+        self.mod_2_type_rbtnGroup.addButton(self.lfo_2_AM_radioButton)
+        self.mod_2_type_rbtnGroup.addButton(self.lfo_2_FM_radioButton)
+        self.mod_2_type_rbtnGroup.addButton(self.lfo_2_PM_radioButton)
+        self.mod_2_type_rbtnGroup.setExclusive(True)
+        self.lfo_2_AM_radioButton.toggled.connect(self.lfo_2_AM_radioButton_clicked)
+        self.lfo_2_FM_radioButton.toggled.connect(self.lfo_2_FM_radioButton_clicked)
+        self.lfo_2_PM_radioButton.toggled.connect(self.lfo_2_PM_radioButton_clicked)
+
         self.adsr_2_att_slider = QSlider(self.centralwidget)
         self.adsr_2_att_slider.setObjectName(u"adsr_2_att_slider")
         self.adsr_2_att_slider.setGeometry(QRect(700, 700, 160, 16))
@@ -404,12 +436,14 @@ class Ui_MainWindow(QWidget):
         self.detune_off_radioButton.setGeometry(QRect(940, 60, 80, 21))
         self.detune_off_radioButton.setFont(font1)
         self.detune_off_radioButton.setAutoExclusive(False)
+        self.detune_off_radioButton.toggled.connect(self.detune_off_radioButton_clicked)
         self.detune_value_dial = QDial(self.centralwidget)
         self.detune_value_dial.setObjectName(u"detune_value_dial")
         self.detune_value_dial.setGeometry(QRect(930, 110, 111, 101))
         self.detune_value_dial.setOrientation(Qt.Horizontal)
         self.detune_value_dial.setWrapping(False)
         self.detune_value_dial.setNotchesVisible(True)
+        self.detune_value_dial.valueChanged.connect(self.detune_value_dial_moved)
         self.label_21 = QLabel(self.centralwidget)
         self.label_21.setObjectName(u"label_21")
         self.label_21.setGeometry(QRect(940, 480, 111, 16))
@@ -517,6 +551,18 @@ class Ui_MainWindow(QWidget):
         self.lfo_1_sawtooth_radioButton.setGeometry(QRect(440, 240, 121, 21))
         self.lfo_1_sawtooth_radioButton.setFont(font1)
         self.lfo_1_sawtooth_radioButton.setAutoExclusive(False)
+
+        self.lfo_1_type_rbtnGroup =  QButtonGroup()
+        self.lfo_1_type_rbtnGroup.addButton(self.lfo_1_sine_radioButton)
+        self.lfo_1_type_rbtnGroup.addButton(self.lfo_1_square_radioButton)
+        self.lfo_1_type_rbtnGroup.addButton(self.lfo_1_sawtooth_radioButton)
+        self.lfo_1_type_rbtnGroup.addButton(self.lfo_1_triangle_radioButton)
+        self.lfo_1_type_rbtnGroup.setExclusive(True)
+        self.lfo_1_sine_radioButton.toggled.connect(self.lfo_1_sine_radioButton_clicked)
+        self.lfo_1_square_radioButton.toggled.connect(self.lfo_1_square_radioButton_clicked)
+        self.lfo_1_sawtooth_radioButton.toggled.connect(self.lfo_1_sawtooth_radioButton_clicked)
+        self.lfo_1_triangle_radioButton.toggled.connect(self.lfo_1_triangle_radioButton_clicked)
+
         self.detune_value_dial_2 = QDial(self.centralwidget)
         self.detune_value_dial_2.setObjectName(u"detune_value_dial_2")
         self.detune_value_dial_2.setGeometry(QRect(1240, 570, 111, 101))
@@ -676,70 +722,86 @@ class Ui_MainWindow(QWidget):
         QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
-    def lfo_1_rate_dial_moved(self):
-        self.synth.params.lfo_1_frequency = 0.19*self.lfo_1_rate_dial.value() + 1
-
-    def lfo_1_amount_dial_moved(self):
-        self.synth.params.mod_1_index = 1/11*self.lfo_1_amount_dial.value() + 1
-
-    def lfo_2_rate_dial_moved(self):
-        self.synth.params.lfo_2_frequency = 0.19*self.lfo_2_rate_dial.value() + 1
-
-    def lfo_2_amount_dial_moved(self):
-        self.synth.params.mod_2_index = 1/11*self.lfo_2_amount_dial.value() + 1
-
-    def panner_rate_dial_moved(self):
-        self.synth.params.lfo_panner_frequency = 0.19*self.panner_rate_dial.value() + 1
-
-    def panner_value_dial_moved(self):
-        if not self.synth.params.panner_modulation_is_working:
-            self.synth.params.panner_index = 1/99*self.panner_value_dial.value()
-        else:
-            self.synth.params.panner_index = 1/198*self.panner_value_dial.value()
-
     def osc_1_off_radioButton_clicked(self):
         self.synth.params.osc_1_is_working = not self.sender().isChecked()
-
     def osc_1_sine_radioButton_clicked(self):
         self.synth.params.osc_1_type = 0
-
     def osc_1_square_radioButton_clicked(self):
         self.synth.params.osc_1_type = 1
-
     def osc_1_sawtooth_radioButton_clicked(self):
         self.synth.params.osc_1_type = 2
-
     def osc_1_triangle_radioButton_clicked(self):
         self.synth.params.osc_1_type = 3
 
     def osc_2_off_radioButton_clicked(self):
         self.synth.params.osc_2_is_working = not self.sender().isChecked()
-
     def osc_2_sine_radioButton_clicked(self):
         self.synth.params.osc_2_type = 0
-
     def osc_2_square_radioButton_clicked(self):
         self.synth.params.osc_2_type = 1
-
     def osc_2_sawtooth_radioButton_clicked(self):
         self.synth.params.osc_2_type = 2
-
     def osc_2_triangle_radioButton_clicked(self):
         self.synth.params.osc_2_type = 3
 
     def lfo_1_off_radioButton_clicked(self):
         self.synth.params.mod_1_is_working = not self.sender().isChecked()
+    def lfo_1_sine_radioButton_clicked(self):
+        self.synth.params.lfo_1_type = 0
+    def lfo_1_square_radioButton_clicked(self):
+        self.synth.params.lfo_1_type = 1
+    def lfo_1_sawtooth_radioButton_clicked(self):
+        self.synth.params.lfo_1_type = 2
+    def lfo_1_triangle_radioButton_clicked(self):
+        self.synth.params.lfo_1_type = 3
+    def lfo_1_AM_radioButton_clicked(self):
+        self.synth.params.mod_1_type = 0
+    def lfo_1_FM_radioButton_clicked(self):
+        self.synth.params.mod_1_type = 1
+    def lfo_1_PM_radioButton_clicked(self):
+        self.synth.params.mod_1_type = 2
+    def lfo_1_rate_dial_moved(self):
+        self.synth.params.lfo_1_frequency = 0.19*self.lfo_1_rate_dial.value() + 1
+    def lfo_1_amount_dial_moved(self):
+        self.synth.params.mod_1_index = 1/11*self.lfo_1_amount_dial.value() + 1
 
     def lfo_2_off_radioButton_clicked(self):
         self.synth.params.mod_2_is_working = not self.sender().isChecked()
+    def lfo_2_sine_radioButton_clicked(self):
+        self.synth.params.lfo_2_type = 0
+    def lfo_2_square_radioButton_clicked(self):
+        self.synth.params.lfo_2_type = 1
+    def lfo_2_sawtooth_radioButton_clicked(self):
+        self.synth.params.lfo_2_type = 2
+    def lfo_2_triangle_radioButton_clicked(self):
+        self.synth.params.lfo_2_type = 3
+    def lfo_2_AM_radioButton_clicked(self):
+        self.synth.params.mod_2_type = 0
+    def lfo_2_FM_radioButton_clicked(self):
+        self.synth.params.mod_2_type = 1
+    def lfo_2_PM_radioButton_clicked(self):
+        self.synth.params.mod_2_type = 2
+    def lfo_2_rate_dial_moved(self):
+        self.synth.params.lfo_2_frequency = 0.19*self.lfo_2_rate_dial.value() + 1
+    def lfo_2_amount_dial_moved(self):
+        self.synth.params.mod_2_index = 1/11*self.lfo_2_amount_dial.value() + 1
 
+    def panner_rate_dial_moved(self):
+            self.synth.params.lfo_panner_frequency = 0.19*self.panner_rate_dial.value() + 1
+    def panner_value_dial_moved(self):
+        if not self.synth.params.panner_modulation_is_working:
+            self.synth.params.panner_index = 1/99*self.panner_value_dial.value()
+        else:
+            self.synth.params.panner_index = 1/198*self.panner_value_dial.value()
     def panner_off_radioButton_clicked(self):
         self.synth.params.panner_is_working = not self.sender().isChecked()
-
     def panner_modulated_radioButton_clicked(self):
         self.synth.params.panner_modulation_is_working = not self.sender().isChecked()
 
-
+    def detune_value_dial_moved(self):
+        self.synth.params.detune_index = 1/297*self.detune_value_dial.value()
+    def detune_off_radioButton_clicked(self):
+        self.synth.params.detune_is_working = not self.sender().isChecked()
 
     def midi_info(self):
         print("Available MIDI ports:\n")
