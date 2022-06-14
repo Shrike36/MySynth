@@ -81,6 +81,16 @@ class Ui_MainWindow(QWidget):
         self.osc_1_triangle_radioButton.setGeometry(QRect(130, 270, 101, 21))
         self.osc_1_triangle_radioButton.setFont(font1)
         self.osc_1_triangle_radioButton.setAutoExclusive(False)
+        self.osc_1_type_rbtnGroup =  QButtonGroup()
+        self.osc_1_type_rbtnGroup.addButton(self.osc_1_sine_radioButton)
+        self.osc_1_type_rbtnGroup.addButton(self.osc_1_square_radioButton)
+        self.osc_1_type_rbtnGroup.addButton(self.osc_1_sawtooth_radioButton)
+        self.osc_1_type_rbtnGroup.addButton(self.osc_1_triangle_radioButton)
+        self.osc_1_type_rbtnGroup.setExclusive(True)
+        self.osc_1_sine_radioButton.toggled.connect(self.osc_1_sine_radioButton_clicked)
+        self.osc_1_square_radioButton.toggled.connect(self.osc_1_square_radioButton_clicked)
+        self.osc_1_sawtooth_radioButton.toggled.connect(self.osc_1_sawtooth_radioButton_clicked)
+        self.osc_1_triangle_radioButton.toggled.connect(self.osc_1_triangle_radioButton_clicked)
         self.osc_1_off_radioButton = QRadioButton(self.centralwidget)
         self.osc_1_off_radioButton.setObjectName(u"osc_1_off_radioButton")
         self.osc_1_off_radioButton.setGeometry(QRect(10, 60, 80, 21))
@@ -324,6 +334,18 @@ class Ui_MainWindow(QWidget):
         self.osc_2_sine_radioButton.setFont(font1)
         self.osc_2_sine_radioButton.setChecked(True)
         self.osc_2_sine_radioButton.setAutoExclusive(False)
+
+        self.osc_2_type_rbtnGroup =  QButtonGroup()
+        self.osc_2_type_rbtnGroup.addButton(self.osc_2_sine_radioButton)
+        self.osc_2_type_rbtnGroup.addButton(self.osc_2_square_radioButton)
+        self.osc_2_type_rbtnGroup.addButton(self.osc_2_sawtooth_radioButton)
+        self.osc_2_type_rbtnGroup.addButton(self.osc_2_triangle_radioButton)
+        self.osc_2_type_rbtnGroup.setExclusive(True)
+        self.osc_2_sine_radioButton.toggled.connect(self.osc_2_sine_radioButton_clicked)
+        self.osc_2_square_radioButton.toggled.connect(self.osc_2_square_radioButton_clicked)
+        self.osc_2_sawtooth_radioButton.toggled.connect(self.osc_2_sawtooth_radioButton_clicked)
+        self.osc_2_triangle_radioButton.toggled.connect(self.osc_2_triangle_radioButton_clicked)
+
         self.label_18 = QLabel(self.centralwidget)
         self.label_18.setObjectName(u"label_18")
         self.label_18.setGeometry(QRect(630, 700, 47, 14))
@@ -473,6 +495,7 @@ class Ui_MainWindow(QWidget):
         self.panner_value_dial.setObjectName(u"panner_value_dial")
         self.panner_value_dial.setGeometry(QRect(1240, 110, 111, 101))
         self.panner_value_dial.setNotchesVisible(True)
+        self.panner_value_dial.valueChanged.connect(self.panner_value_dial_moved)
         self.lfo_1_sine_radioButton = QRadioButton(self.centralwidget)
         self.lfo_1_sine_radioButton.setObjectName(u"lfo_1_sine_radioButton")
         self.lfo_1_sine_radioButton.setGeometry(QRect(320, 240, 80, 21))
@@ -598,8 +621,6 @@ class Ui_MainWindow(QWidget):
 
         self.render_rate = 44100
 
-
-
         t1 = time.time()
         self.wave_generator = WaveGenerator(self.render_rate)
         print(" Total time taken is :", time.time() - t1)
@@ -670,11 +691,41 @@ class Ui_MainWindow(QWidget):
     def panner_rate_dial_moved(self):
         self.synth.params.lfo_panner_frequency = 0.19*self.panner_rate_dial.value() + 1
 
+    def panner_value_dial_moved(self):
+        if not self.synth.params.panner_modulation_is_working:
+            self.synth.params.panner_index = 1/99*self.panner_value_dial.value()
+        else:
+            self.synth.params.panner_index = 1/198*self.panner_value_dial.value()
+
     def osc_1_off_radioButton_clicked(self):
         self.synth.params.osc_1_is_working = not self.sender().isChecked()
 
+    def osc_1_sine_radioButton_clicked(self):
+        self.synth.params.osc_1_type = 0
+
+    def osc_1_square_radioButton_clicked(self):
+        self.synth.params.osc_1_type = 1
+
+    def osc_1_sawtooth_radioButton_clicked(self):
+        self.synth.params.osc_1_type = 2
+
+    def osc_1_triangle_radioButton_clicked(self):
+        self.synth.params.osc_1_type = 3
+
     def osc_2_off_radioButton_clicked(self):
         self.synth.params.osc_2_is_working = not self.sender().isChecked()
+
+    def osc_2_sine_radioButton_clicked(self):
+        self.synth.params.osc_2_type = 0
+
+    def osc_2_square_radioButton_clicked(self):
+        self.synth.params.osc_2_type = 1
+
+    def osc_2_sawtooth_radioButton_clicked(self):
+        self.synth.params.osc_2_type = 2
+
+    def osc_2_triangle_radioButton_clicked(self):
+        self.synth.params.osc_2_type = 3
 
     def lfo_1_off_radioButton_clicked(self):
         self.synth.params.mod_1_is_working = not self.sender().isChecked()
@@ -687,6 +738,8 @@ class Ui_MainWindow(QWidget):
 
     def panner_modulated_radioButton_clicked(self):
         self.synth.params.panner_modulation_is_working = not self.sender().isChecked()
+
+
 
     def midi_info(self):
         print("Available MIDI ports:\n")

@@ -20,6 +20,7 @@ import pyaudio
 #Modulating wave m(t)=A_m*cos(2*pi*f_m*t)
 #Modulated wave s(t)=A_c[1+mu*cos(2*pi*f_m*t)]cos(2*pi*f_c*t)
 from Oscillators.WaveGenerator import WaveGenerator
+from Synth.Parameters import SynthParams
 from Synth.Synth import Synth
 
 A_c = 5#float(input('Enter carrier amplitude: '))
@@ -28,7 +29,7 @@ A_m = 5#float(input('Enter message amplitude: '))
 f_m = 1#float(input('Enter message frquency: '))
 modulation_index = 6#float(input('Enter modulation index: '))
 
-render_rate = 20000
+render_rate = 88200
 sample_rate = 20000
 buffer = 2000
 
@@ -42,7 +43,7 @@ envelope_1 = Envelope(0.3,0.8,3.8,3.9,0.5,render_rate)
 
 modulation_1 = LFOModulation(ModulationType.fm)
 
-detune_1 = Detune(1/4)
+detune_1 = Detune(0)
 detune_2 = ModulatedDetune(1/4,lfo_1,2)
 
 wave_adder_1 = WaveAdder(1,1,0.5)
@@ -54,10 +55,13 @@ base_oscillator_1 = Oscillator(Type.sawtooth,wave_generator,render_rate)
 base_oscillator_2 = Oscillator(Type.sine,wave_generator,render_rate)
 modulated_oscillator = ModulatedOscillator(Type.sine,wave_generator,lfo_1,2,envelope_1,modulation_1,2,render_rate)
 
-synth = Synth(modulated_oscillator,
+params = SynthParams()
+
+synth = Synth(base_oscillator_1,
               detune=detune_1,
               wave_adder=wave_adder_1,
               stereo_panner=panner_1,
+              params=params,
               render_rate=render_rate,
               stereo=True)
 print('done')
@@ -145,19 +149,19 @@ ch2 = []
 
 t1 = time.time()
 
-samples = synth.get_next_sample_with_numba(5,10,np.arange(0,10*render_rate),render_rate,True)
+# samples = synth.get_next_sample_with_numba(5,880*2,np.arange(0,render_rate),render_rate,True)
 
-# for t in range(0,int(1*render_rate)):
-#     aa,sm = synth.get_next_sample(10,10,t)
-#     # arr1.append(aa[0])
-#     arr1.append(base_oscillator_2.get_next_sample(10,1,t))
-#     arr2.append(base_oscillator_2.get_next_sample(10,2,t))
-#
-#     # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
-#     # arr2.append(lfo_1.get_next_integral(3,t))
-#     sum.append(sm)
-#     # ch1.append(ster[0])
-#     # ch2.append(ster[1])
+for t in range(0,int(1*render_rate)):
+    aa = synth.get_next_sample(10,2*880,t)
+    # arr1.append(aa[0])
+    # arr1.append(base_oscillator_2.get_next_sample(10,1,t))
+    # arr2.append(base_oscillator_2.get_next_sample(10,2,t))
+
+    # arr1.append(modulated_oscillator.wave_generator.waves[3][t])
+    # arr2.append(lfo_1.get_next_integral(3,t))
+    sum.append(aa)
+    # ch1.append(ster[0])
+    # ch2.append(ster[1])
 
 # for t in range(0,int(10*render_rate)):
 #     arr1.append(base_oscillator_3.get_next_sample(10,5,t))
@@ -236,7 +240,7 @@ print(" Total time taken is :", time.time() - t1)
 
 plt.subplot(1,1,1)
 # plt.title('FM')
-plt.plot(samples, 'g')
+plt.plot(sum, 'g')
 plt.ylabel('Amplitude')
 # plt.xlabel('Osc')
 #
