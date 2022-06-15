@@ -45,7 +45,7 @@ class Controller:
                            frames_per_buffer=buffer_size)
 
     def change_midi_port(self, port, port_count):
-        print("midi port changed to:", port)
+        # print("midi port changed to:", port)
         if port is not None and port < port_count:
             self.midi_interface = None
             self.midi_interface = MidiInterface(int(port))
@@ -55,10 +55,10 @@ class Controller:
 
     def toggle(self):
         if self.running:
-            print("inactive")
+            # print("inactive")
             self.running = False
         elif not self.running:
-            print("active")
+            # print("active")
             self.running = True
             # t = threading.Thread(target=self.render)
             # t.start()
@@ -123,7 +123,7 @@ class Controller:
             pressed = self.midi_interface.pressed
             currentFreq = self.midi_interface.currentFreq
 
-            max_a = 0.1
+            max_a = 0.5
             min_a = 0.01
             amplitude = (max_a-min_a)/126 * (self.midi_interface.velocity - 1) + min_a
 

@@ -40,7 +40,7 @@ class Ui_MainWindow(QWidget):
     def setupUi(self, MainWindow):
         if MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1522, 945)
+        MainWindow.setFixedSize(1522, 945)
         self.actionSample_Rate = QAction(MainWindow)
         self.actionSample_Rate.setObjectName(u"actionSample_Rate")
         self.centralwidget = QWidget(MainWindow)
@@ -155,6 +155,7 @@ class Ui_MainWindow(QWidget):
         self.adsr_1_off_radioButton.setGeometry(QRect(630, 60, 80, 21))
         self.adsr_1_off_radioButton.setFont(font1)
         self.adsr_1_off_radioButton.setAutoExclusive(False)
+        self.adsr_1_off_radioButton.toggled.connect(self.adsr_1_off_radioButton_clicked)
         self.lfo_1_rate_dial = QDial(self.centralwidget)
         self.lfo_1_rate_dial.setObjectName(u"lfo_1_rate_dial")
         self.lfo_1_rate_dial.setGeometry(QRect(310, 380, 50, 64))
@@ -196,6 +197,10 @@ class Ui_MainWindow(QWidget):
         self.adsr_1_rel_slider.setGeometry(QRect(700, 360, 160, 16))
         self.adsr_1_rel_slider.setValue(10)
         self.adsr_1_rel_slider.setOrientation(Qt.Horizontal)
+        self.adsr_1_att_slider.valueChanged.connect(self.adsr_1_att_slider_moved)
+        self.adsr_1_dec_slider.valueChanged.connect(self.adsr_1_dec_slider_moved)
+        self.adsr_1_sus_slider.valueChanged.connect(self.adsr_1_sus_slider_moved)
+        self.adsr_1_rel_slider.valueChanged.connect(self.adsr_1_rel_slider_moved)
         self.label_6 = QLabel(self.centralwidget)
         self.label_6.setObjectName(u"label_6")
         self.label_6.setGeometry(QRect(630, 240, 47, 14))
@@ -223,6 +228,7 @@ class Ui_MainWindow(QWidget):
         self.adsr_2_off_radioButton.setGeometry(QRect(630, 520, 80, 21))
         self.adsr_2_off_radioButton.setFont(font1)
         self.adsr_2_off_radioButton.setAutoExclusive(False)
+        self.adsr_2_off_radioButton.toggled.connect(self.adsr_2_off_radioButton_clicked)
         self.label_10 = QLabel(self.centralwidget)
         self.label_10.setObjectName(u"label_10")
         self.label_10.setGeometry(QRect(630, 820, 61, 16))
@@ -405,6 +411,10 @@ class Ui_MainWindow(QWidget):
         self.adsr_2_dec_slider.setGeometry(QRect(700, 740, 160, 16))
         self.adsr_2_dec_slider.setValue(10)
         self.adsr_2_dec_slider.setOrientation(Qt.Horizontal)
+        self.adsr_2_att_slider.valueChanged.connect(self.adsr_2_att_slider_moved)
+        self.adsr_2_dec_slider.valueChanged.connect(self.adsr_2_dec_slider_moved)
+        self.adsr_2_sus_slider.valueChanged.connect(self.adsr_2_sus_slider_moved)
+        self.adsr_2_rel_slider.valueChanged.connect(self.adsr_2_rel_slider_moved)
         self.line = QFrame(self.centralwidget)
         self.line.setObjectName(u"line")
         self.line.setGeometry(QRect(0, 450, 1521, 16))
@@ -580,12 +590,13 @@ class Ui_MainWindow(QWidget):
         self.lfo_1_sawtooth_radioButton.toggled.connect(self.lfo_1_sawtooth_radioButton_clicked)
         self.lfo_1_triangle_radioButton.toggled.connect(self.lfo_1_triangle_radioButton_clicked)
 
-        self.detune_value_dial_2 = QDial(self.centralwidget)
-        self.detune_value_dial_2.setObjectName(u"detune_value_dial_2")
-        self.detune_value_dial_2.setGeometry(QRect(1240, 570, 111, 101))
-        self.detune_value_dial_2.setOrientation(Qt.Horizontal)
-        self.detune_value_dial_2.setWrapping(False)
-        self.detune_value_dial_2.setNotchesVisible(True)
+        self.master_dial = QDial(self.centralwidget)
+        self.master_dial.setObjectName(u"detune_value_dial_2")
+        self.master_dial.setGeometry(QRect(1240, 570, 111, 101))
+        self.master_dial.setOrientation(Qt.Horizontal)
+        self.master_dial.setWrapping(False)
+        self.master_dial.setNotchesVisible(True)
+        self.master_dial.valueChanged.connect(self.master_dial_moved)
         self.label_26 = QLabel(self.centralwidget)
         self.label_26.setObjectName(u"label_26")
         self.label_26.setGeometry(QRect(1250, 480, 111, 16))
@@ -608,6 +619,8 @@ class Ui_MainWindow(QWidget):
         self.adsr_2_level_slider.setGeometry(QRect(700, 870, 160, 16))
         self.adsr_2_level_slider.setValue(10)
         self.adsr_2_level_slider.setOrientation(Qt.Horizontal)
+        self.adsr_1_level_slider.valueChanged.connect(self.adsr_1_level_slider_moved)
+        self.adsr_2_level_slider.valueChanged.connect(self.adsr_2_level_slider_moved)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -621,72 +634,72 @@ class Ui_MainWindow(QWidget):
 
         self.menubar.addAction(self.menuSettings.menuAction())
         self.menuSettings.addAction(self.actionSample_Rate)
-        self.pen = pg.mkPen(color=(255, 0, 0), width=5)
-        self.pen_1 = pg.mkPen(color=(0, 255, 0), width=5)
-        self.wave_gen = WaveGenerator(20000)
-        self.envelope_1_a = Envelope(0.3, 0.2, 3.8, 0.9, 0.8, 20000)
-        self.envelope_2_a = Envelope(0.5, 0.5, 2, 5.9, 0.5, 20000)
-
-        self.osc_1_view = pg.PlotWidget()
-        self.osc_1_view.setBackground('w')
-        self.osc_1_view.setXRange(0, 20000, padding=0)
-        self.osc_1_view.setYRange(-1.2, 1.2, padding=0)
-        self.osc_1_view.hideAxis('bottom')
-        self.osc_1_view.hideAxis('left')
-        self.osc_1_layout.addWidget(self.osc_1_view)
-        self.osc_1_view.plot(self.wave_gen.sine_wave,pen=self.pen)
-
-        self.osc_2_view = pg.PlotWidget()
-        self.osc_2_view.setBackground('w')
-        self.osc_2_view.setXRange(-2, 20002, padding=0)
-        self.osc_2_view.setYRange(-1.2, 1.2, padding=0)
-        self.osc_2_view.hideAxis('bottom')
-        self.osc_2_view.hideAxis('left')
-        self.osc_2_layout.addWidget(self.osc_2_view)
-        self.osc_2_view.plot(self.wave_gen.sawtooth_wave,pen=self.pen_1)
-
-        self.lfo_1_view = pg.PlotWidget()
-        self.lfo_1_view.enableMouse(False)
-        self.lfo_1_view.setBackground('w')
-        self.lfo_1_view.setXRange(0, 20000, padding=0)
-        self.lfo_1_view.setYRange(-1.2, 1.2, padding=0)
-        self.lfo_1_view.hideAxis('bottom')
-        self.lfo_1_view.hideAxis('left')
-        self.lfo_1_layout.addWidget(self.lfo_1_view)
-        self.lfo_1_view.plot(self.wave_gen.square_wave,pen=self.pen)
-
-        self.lfo_2_view = pg.PlotWidget()
-        self.lfo_2_view.setBackground('w')
-        self.lfo_2_view.setXRange(0, 20000, padding=0)
-        self.lfo_2_view.setYRange(-1.2, 1.2, padding=0)
-        self.lfo_2_view.hideAxis('bottom')
-        self.lfo_2_view.hideAxis('left')
-        self.lfo_2_layout.addWidget(self.lfo_2_view)
-        self.lfo_2_view.plot(self.wave_gen.triangle_wave,pen=self.pen_1)
-
-        self.adsr_1_view = pg.PlotWidget()
-        self.adsr_1_view.setBackground('w')
-        self.adsr_1_view.setXRange(0, 10*20000, padding=0)
-        self.adsr_1_view.setYRange(-0.2, 1.2, padding=0)
-        self.adsr_1_view.hideAxis('bottom')
-        self.adsr_1_view.hideAxis('left')
-        self.adsr_1_layout.addWidget(self.adsr_1_view)
-        self.adsr_1_view.plot(self.envelope_1_a.values, pen=self.pen)
-
-        self.adsr_2_view = pg.PlotWidget()
-        self.adsr_2_view.setBackground('w')
-        self.adsr_2_view.setXRange(0, 10*20000, padding=0)
-        self.adsr_2_view.setYRange(-0.2, 1.2, padding=0)
-        self.adsr_2_view.hideAxis('bottom')
-        self.adsr_2_view.hideAxis('left')
-        self.adsr_2_layout.addWidget(self.adsr_2_view)
-        self.adsr_2_view.plot(self.envelope_2_a.values, pen=self.pen_1)
+        # self.pen = pg.mkPen(color=(255, 0, 0), width=5)
+        # self.pen_1 = pg.mkPen(color=(0, 255, 0), width=5)
+        # self.wave_gen = WaveGenerator(20000)
+        # self.envelope_1_a = Envelope(0.3, 0.2, 3.8, 0.9, 0.8, 20000)
+        # self.envelope_2_a = Envelope(0.5, 0.5, 2, 5.9, 0.5, 20000)
+        #
+        # self.osc_1_view = pg.PlotWidget()
+        # self.osc_1_view.setBackground('w')
+        # self.osc_1_view.setXRange(0, 20000, padding=0)
+        # self.osc_1_view.setYRange(-1.2, 1.2, padding=0)
+        # self.osc_1_view.hideAxis('bottom')
+        # self.osc_1_view.hideAxis('left')
+        # self.osc_1_layout.addWidget(self.osc_1_view)
+        # self.osc_1_view.plot(self.wave_gen.sine_wave,pen=self.pen)
+        #
+        # self.osc_2_view = pg.PlotWidget()
+        # self.osc_2_view.setBackground('w')
+        # self.osc_2_view.setXRange(-2, 20002, padding=0)
+        # self.osc_2_view.setYRange(-1.2, 1.2, padding=0)
+        # self.osc_2_view.hideAxis('bottom')
+        # self.osc_2_view.hideAxis('left')
+        # self.osc_2_layout.addWidget(self.osc_2_view)
+        # self.osc_2_view.plot(self.wave_gen.sawtooth_wave,pen=self.pen_1)
+        #
+        # self.lfo_1_view = pg.PlotWidget()
+        # self.lfo_1_view.enableMouse(False)
+        # self.lfo_1_view.setBackground('w')
+        # self.lfo_1_view.setXRange(0, 20000, padding=0)
+        # self.lfo_1_view.setYRange(-1.2, 1.2, padding=0)
+        # self.lfo_1_view.hideAxis('bottom')
+        # self.lfo_1_view.hideAxis('left')
+        # self.lfo_1_layout.addWidget(self.lfo_1_view)
+        # self.lfo_1_view.plot(self.wave_gen.square_wave,pen=self.pen)
+        #
+        # self.lfo_2_view = pg.PlotWidget()
+        # self.lfo_2_view.setBackground('w')
+        # self.lfo_2_view.setXRange(0, 20000, padding=0)
+        # self.lfo_2_view.setYRange(-1.2, 1.2, padding=0)
+        # self.lfo_2_view.hideAxis('bottom')
+        # self.lfo_2_view.hideAxis('left')
+        # self.lfo_2_layout.addWidget(self.lfo_2_view)
+        # self.lfo_2_view.plot(self.wave_gen.triangle_wave,pen=self.pen_1)
+        #
+        # self.adsr_1_view = pg.PlotWidget()
+        # self.adsr_1_view.setBackground('w')
+        # self.adsr_1_view.setXRange(0, 10*20000, padding=0)
+        # self.adsr_1_view.setYRange(-0.2, 1.2, padding=0)
+        # self.adsr_1_view.hideAxis('bottom')
+        # self.adsr_1_view.hideAxis('left')
+        # self.adsr_1_layout.addWidget(self.adsr_1_view)
+        # self.adsr_1_view.plot(self.envelope_1_a.values, pen=self.pen)
+        #
+        # self.adsr_2_view = pg.PlotWidget()
+        # self.adsr_2_view.setBackground('w')
+        # self.adsr_2_view.setXRange(0, 10*20000, padding=0)
+        # self.adsr_2_view.setYRange(-0.2, 1.2, padding=0)
+        # self.adsr_2_view.hideAxis('bottom')
+        # self.adsr_2_view.hideAxis('left')
+        # self.adsr_2_layout.addWidget(self.adsr_2_view)
+        # self.adsr_2_view.plot(self.envelope_2_a.values, pen=self.pen_1)
 
         self.render_rate = 44100
 
-        t1 = time.time()
+        # t1 = time.time()
         self.wave_generator = WaveGenerator(self.render_rate)
-        print(" Total time taken is :", time.time() - t1)
+        # print(" Total time taken is :", time.time() - t1)
 
         self.lfo_1 = LFO(Oscillator(Type.sine,self.wave_generator,self.render_rate))
 
@@ -720,18 +733,18 @@ class Ui_MainWindow(QWidget):
         self.synth.get_next_sample_with_numba(1,1,0,256,self.render_rate)
 
         self.midi_in = rtmidi.MidiIn()
-
-        port = None
-        while not isinstance(port, int):
-            self.midi_info()
-            port = input()
-            try:
-                port = int(port)
-            except ValueError:
-                print("Port need to be a number!\n")
+        #
+        # port = None
+        # while not isinstance(port, int):
+        #     self.midi_info()
+        #     port = input()
+        #     try:
+        #         port = int(port)
+        #     except ValueError:
+        #         print("Port need to be a number!\n")
 
         self.controller = Controller(synth=self.synth,sample_rate=self.render_rate)
-        self.controller.change_midi_port(port, self.midi_in.get_port_count())
+        self.controller.change_midi_port(0, self.midi_in.get_port_count())
         self.controller.toggle()
 
         self.count = 0
@@ -805,6 +818,32 @@ class Ui_MainWindow(QWidget):
     def lfo_2_amount_dial_moved(self):
         self.synth.params.mod_2_index = 1/11*self.lfo_2_amount_dial.value() + 1
 
+    def adsr_1_off_radioButton_clicked(self):
+        self.synth.params.adsr_1_is_working = not self.sender().isChecked()
+    def adsr_1_att_slider_moved(self):
+        self.synth.params.adsr_1[0] = 499/9900*self.adsr_1_att_slider.value()+0.01
+    def adsr_1_dec_slider_moved(self):
+        self.synth.params.adsr_1[1] = 499/9900*self.adsr_1_dec_slider.value()+0.01
+    def adsr_1_sus_slider_moved(self):
+        self.synth.params.adsr_1[2] = 499/9900*self.adsr_1_sus_slider.value()+0.01
+    def adsr_1_rel_slider_moved(self):
+        self.synth.params.adsr_1[3] = 499/9900*self.adsr_1_rel_slider.value()+0.01
+    def adsr_1_level_slider_moved(self):
+        self.synth.params.adsr_1[4] = 1/99*self.adsr_1_level_slider.value()
+
+    def adsr_2_off_radioButton_clicked(self):
+        self.synth.params.adsr_2_is_working = not self.sender().isChecked()
+    def adsr_2_att_slider_moved(self):
+        self.synth.params.adsr_2[0] = 499/9900*self.adsr_2_att_slider.value()+0.01
+    def adsr_2_dec_slider_moved(self):
+        self.synth.params.adsr_2[1] = 499/9900*self.adsr_2_dec_slider.value()+0.01
+    def adsr_2_sus_slider_moved(self):
+        self.synth.params.adsr_2[2] = 499/9900*self.adsr_2_sus_slider.value()+0.01
+    def adsr_2_rel_slider_moved(self):
+        self.synth.params.adsr_2[3] = 499/9900*self.adsr_2_rel_slider.value()+0.01
+    def adsr_2_level_slider_moved(self):
+        self.synth.params.adsr_2[4] = 1/99*self.adsr_2_level_slider.value()
+
     def panner_rate_dial_moved(self):
             self.synth.params.lfo_panner_frequency = 0.19*self.panner_rate_dial.value() + 1
     def panner_value_dial_moved(self):
@@ -834,6 +873,9 @@ class Ui_MainWindow(QWidget):
         self.synth.params.osc_1_adder_index = 1/99*self.osc_1_value_slider.value()
     def osc_2_value_dial_moved(self):
         self.synth.params.osc_2_adder_index = 1/99*self.osc_2_value_slider.value()
+
+    def master_dial_moved(self):
+        self.synth.params.master = 2/99*self.master_dial.value()
 
     def midi_info(self):
         print("Available MIDI ports:\n")

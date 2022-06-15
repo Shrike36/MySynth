@@ -76,6 +76,7 @@ class Synth:
                           self.params.detune_is_working, self.params.detune_index,
                           self.params.panner_is_working, self.params.panner_index,
                           self.params.panner_modulation_is_working,self.params.lfo_panner_type,self.params.lfo_panner_frequency,
+                          self.params.master,
                           render_rate,
                           pressed, time_up,
                           self.wave_gen.waves, self.wave_gen.int_waves)
@@ -95,6 +96,7 @@ class Synth:
               detune_is_working,detune_index,
               panner_is_working,panner_index,
               panner_modulation_is_working,lfo_panner_type,lfo_panner_frequency,
+              master,
               render_rate,
               pressed=True,time_up=sys.maxsize/2,
               waves=np.array([]),integrals=np.array([])):
@@ -193,67 +195,42 @@ class Synth:
 
             if adsr_1_is_working:
                 if pressed:
-                    if t >= adsr_1_len:
-                        index = 0
+                    if t < atck_len_1:
+                        index = t/(atck_len_1-1)
+                    elif t >= atck_len_1 and t < dck_len_1+atck_len_1:
+                        index = (t - atck_len_1) * ((adsr_1[4]-1)/dck_len_1) + 1
                     else:
-                        if t <= atck_len_1:
-                            index = t/atck_len_1
-                        elif t > atck_len_1 and t <= dck_len_1:
-                            index = (t - atck_len_1) * ((adsr_1[4]-1)/dck_len_1) + 1
-                        elif t > dck_len_1 and t <= sus_len_1:
-                            index = adsr_1[4]
-                        else:
-                            x_a = adsr_1_len - rel_len_1
-                            index = adsr_1[4] - (t - x_a)*(adsr_1[4]/rel_len_1)
+                        index = adsr_1[4]
                 else:
                     delta = adsr_1_len - rel_len_1 - time_up
                     t_ = t + delta
-                    if t_ >= adsr_1_len or delta < 0:
+                    if t_ >= adsr_1_len or t_+delta < 0:
                         index = 0
                     else:
-                        if t_ <= atck_len_1:
-                            index = t_/atck_len_1
-                        elif t_ > atck_len_1 and t_ <= dck_len_1:
-                            index = (t_ - atck_len_1) * ((adsr_1[4]-1)/dck_len_1) + 1
-                        elif t_ > dck_len_1 and t_ <= sus_len_1:
-                            index = adsr_1[4]
-                        else:
-                            x_a = adsr_1_len - rel_len_1
-                            index = adsr_1[4] - (t_ - x_a)*(adsr_1[4]/rel_len_1)
+                        x_a = adsr_1_len - rel_len_1
+                        index = adsr_1[4] - (t_ - x_a)*(adsr_1[4]/rel_len_1)
                 oscillator_1_value = index*oscillator_1_value
+
             else:
                 if not pressed:
                     oscillator_1_value = 0
 
             if adsr_2_is_working:
                 if pressed:
-                    if t >= adsr_2_len:
-                        index = 0
+                    if t <= atck_len_2:
+                        index = t/atck_len_2
+                    elif t > atck_len_2 and t <= dck_len_2+atck_len_2:
+                        index = (t - atck_len_2) * ((adsr_2[4]-1)/dck_len_2) + 1
                     else:
-                        if t <= atck_len_2:
-                            index = t/atck_len_2
-                        elif t > atck_len_2 and t <= dck_len_2:
-                            index = (t - atck_len_2) * ((adsr_2[4]-1)/dck_len_2) + 1
-                        elif t > dck_len_2 and t <= sus_len_2:
-                            index = adsr_2[4]
-                        else:
-                            x_a = adsr_2_len - rel_len_2
-                            index = adsr_2[4] - (t - x_a)*(adsr_1[4]/rel_len_2)
+                        index = adsr_2[4]
                 else:
                     delta = adsr_2_len - rel_len_2 - time_up
                     t_ = t + delta
                     if t_ >= adsr_2_len or delta < 0:
                         index = 0
                     else:
-                        if t_ <= atck_len_2:
-                            index = t_/atck_len_2
-                        elif t_ > atck_len_2 and t_ <= dck_len_2:
-                            index = (t_ - atck_len_2) * ((adsr_2[4]-1)/dck_len_2) + 1
-                        elif t_ > dck_len_2 and t_ <= sus_len_2:
-                            index = adsr_2[4]
-                        else:
-                            x_a = adsr_2_len - rel_len_2
-                            index = adsr_2[4] - (t_ - x_a)*(adsr_2[4]/rel_len_2)
+                        x_a = adsr_2_len - rel_len_2
+                        index = adsr_2[4] - (t_ - x_a)*(adsr_2[4]/rel_len_2)
                 oscillator_2_value = index*oscillator_2_value
             else:
                 if not pressed:
@@ -287,4 +264,4 @@ class Synth:
                     stereo_sample[1][i] = amp * sample[i]
                     i = i + 1
 
-        return stereo_sample
+        return master*stereo_sample

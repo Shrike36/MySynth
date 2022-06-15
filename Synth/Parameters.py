@@ -40,4 +40,6 @@ class SynthParams:
         self.lfo_panner_type = Type.sine.value
         self.lfo_panner_frequency = 1
 
+        self.master = 1
+
 
