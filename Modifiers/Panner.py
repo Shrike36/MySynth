@@ -9,11 +9,6 @@ class StereoPanner:
     '0 <= index <= 1'
     def get_stereo_sample(self,sample,time):
         return [(1-self.index)*sample, self.index*sample]
-        # stereo_sample = [(1+index)*sample,(1-index)*sample]
-        # left_sample = (1+index)*sample
-        # right_sample = (1-index)*sample
-        # stereo_sample.append(left_sample)
-        # stereo_sample.append(right_sample)
 
 class ModulatedPanner(StereoPanner):
     def __init__(self,index : float, lfo : LFO, lfo_rate : float):
